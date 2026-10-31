@@ -279,7 +279,7 @@ nav.main button[aria-current="page"]{color:var(--primary-text);background:var(--
 @keyframes fade{from{opacity:0}to{opacity:1}}
 .voice{background:var(--grad);color:#fff;width:min(460px,100%);height:100%;overflow:auto;padding:28px;display:flex;flex-direction:column;gap:16px;animation:slide .22s ease}
 .voice .xbtn{background:rgba(255,255,255,.15);border-color:rgba(255,255,255,.35);color:#fff}
-.orb{width:170px;height:170px;border-radius:50%;margin:16px auto 4px;background:radial-gradient(circle at 35% 30%,#FFF7D6 0%,#F4B400 24%,#6F87E0 56%,rgba(59,92,204,0) 72%);position:relative}
+.orb{width:170px;height:170px;flex:none;border-radius:50%;margin:16px auto 4px;background:radial-gradient(circle at 35% 30%,#FFF7D6 0%,#F4B400 24%,#6F87E0 56%,rgba(59,92,204,0) 72%);position:relative}
 .orb::after{content:"";position:absolute;inset:-16px;border-radius:50%;border:2px solid rgba(255,255,255,.35);animation:ring 1.6s infinite}
 .orb.idle::after{animation:none;opacity:.3}
 @keyframes ring{0%{transform:scale(.9);opacity:.8}100%{transform:scale(1.25);opacity:0}}
@@ -886,7 +886,7 @@ document.addEventListener('click',e=>{
   if(b.id==='swap'){[S.from,S.to]=[S.to,S.from];render(false);$('#swap').focus();return}
   if(b.id==='paxPick'){if(S.auth){S.flowMode='pick';go('travellers')}else guestPaxDialog();return}
 });
-function togglePax(id){const p=person(id),q=S.quota;if((q==='SS'&&!eligSS(p))||(q==='LD'&&!eligLD(p))){announce(`${p.name} doesn’t qualify for this booking type`);toast(`${p.name.split(' ')[0]} doesn’t qualify for ${QSHORT[q]}`);return}
+function togglePax(id){const p=person(id),q=S.quota;if(!S.pax.includes(id)&&((q==='SS'&&!eligSS(p))||(q==='LD'&&!eligLD(p)))){announce(`${p.name} doesn’t qualify for this booking type`);toast(`${p.name.split(' ')[0]} doesn’t qualify for ${QSHORT[q]}`);return}
   S.pax=S.pax.includes(id)?S.pax.filter(x=>x!==id):[...S.pax,id];render(false);const el=$(`[data-pax="${id}"]`);el&&el.focus()}
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){if($('#layer').innerHTML)closeLayer();tourPop(false)}});
 document.addEventListener('change',e=>{
