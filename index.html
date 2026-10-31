@@ -1,0 +1,928 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>IRCTC · Book train tickets</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+Devanagari:wght@400;500;600&family=Atkinson+Hyperlegible:wght@400;700&display=swap">
+<style>
+/* =========================================================
+   Tokens: lavender page, violet gradient, white cards, large type
+   ========================================================= */
+:root{
+  --bg:#F3F4F8; --surface:#FFFFFF; --sunk:#ECEFF6; --ink:#121A33; --muted:#566079; --line:#E0E4EF; --line-2:#C7CFE2;
+  --primary:#2443B5; --on-primary:#FFFFFF; --primary-soft:#E6ECFC; --primary-text:#1F3BA3;
+  --cta:#F4B400; --on-cta:#14204A;
+  --grad:linear-gradient(120deg,#0F1A44 0%,#1E3A93 45%,#3B5CCC 80%,#7E95E4 100%);
+  --sky-front:rgba(35,26,96,.85); --sky-back:rgba(255,255,255,.13);
+  --ok:#0F7A47; --ok-soft:#E3F5EB; --warn:#9A5B00; --warn-soft:#FFF2DB; --bad:#C0352B; --bad-soft:#FDEBE9;
+  --focus:#3B82F6; --shadow:0 2px 6px rgba(20,32,74,.05),0 14px 36px rgba(20,32,74,.08);
+  --font:'Inter','Noto Sans Devanagari',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --fs:16px; --lh:1.45; --ls:0; color-scheme:light;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]):not([data-theme="hc"]){
+  --bg:#0B0F1D; --surface:#141A2E; --sunk:#10162A; --ink:#E9EDF8; --muted:#A5AEC6; --line:#252D47; --line-2:#37415F;
+  --primary:#8EA6FF; --on-primary:#0B1230; --primary-soft:#1C2648; --primary-text:#A9BCFF;
+  --cta:#F5C542; --on-cta:#1A1606;
+  --grad:linear-gradient(120deg,#070C20 0%,#14245E 50%,#2A45A6 100%); --sky-front:rgba(10,8,30,.85); --sky-back:rgba(255,255,255,.07);
+  --ok:#6BD49A; --ok-soft:#10301F; --warn:#F3C063; --warn-soft:#33270F; --bad:#FF958A; --bad-soft:#3A1816;
+  --focus:#93B4FF; --shadow:none; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0B0F1D; --surface:#141A2E; --sunk:#10162A; --ink:#E9EDF8; --muted:#A5AEC6; --line:#252D47; --line-2:#37415F;
+  --primary:#8EA6FF; --on-primary:#0B1230; --primary-soft:#1C2648; --primary-text:#A9BCFF;
+  --cta:#F5C542; --on-cta:#1A1606;
+  --grad:linear-gradient(120deg,#070C20 0%,#14245E 50%,#2A45A6 100%); --sky-front:rgba(10,8,30,.85); --sky-back:rgba(255,255,255,.07);
+  --ok:#6BD49A; --ok-soft:#10301F; --warn:#F3C063; --warn-soft:#33270F; --bad:#FF958A; --bad-soft:#3A1816;
+  --focus:#93B4FF; --shadow:none; color-scheme:dark}
+:root[data-theme="hc"]{
+  --bg:#FFFFFF; --surface:#FFFFFF; --sunk:#FFFFFF; --ink:#000000; --muted:#000000; --line:#000000; --line-2:#000000;
+  --primary:#000000; --on-primary:#FFFF00; --primary-soft:#FFFFFF; --primary-text:#000000; --cta:#000000; --on-cta:#FFFF00;
+  --grad:#000000; --sky-front:#333333; --sky-back:rgba(255,255,255,.2);
+  --ok:#000000; --ok-soft:#FFFFFF; --warn:#000000; --warn-soft:#FFFFFF; --bad:#000000; --bad-soft:#FFFFFF; --focus:#FF7A00; --shadow:none}
+:root[data-theme="hc"] .card,:root[data-theme="hc"] .tcard,:root[data-theme="hc"] .pill,:root[data-theme="hc"] .chip,:root[data-theme="hc"] .opt,:root[data-theme="hc"] .person{border:2px solid #000!important}
+:root.readable{--font:'Atkinson Hyperlegible','Noto Sans Devanagari',system-ui,sans-serif}
+:root.spacing{--lh:1.85; --ls:.03em}
+:root.calm *,:root.focus *{animation:none!important;transition:none!important}
+:root.focus .optional{display:none!important}
+:root.focus .btn,:root.focus .chip{min-height:58px}
+@media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
+
+*{box-sizing:border-box}
+html{font-size:var(--fs);scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font);line-height:var(--lh);letter-spacing:var(--ls);-webkit-font-smoothing:antialiased}
+button,input,select{font:inherit;color:inherit;letter-spacing:inherit}
+button{cursor:pointer}
+h1,h2,h3,p{margin:0}
+h1,h2,h3{line-height:1.12;text-wrap:balance;letter-spacing:-.03em}
+:focus-visible{outline:3px solid var(--focus);outline-offset:2px;border-radius:10px}
+[tabindex="-1"]:focus{outline:none}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+.skip{position:absolute;left:16px;top:-80px;z-index:200;background:var(--surface);color:var(--ink);border:2px solid var(--focus);padding:10px 14px;border-radius:10px}
+.skip:focus{top:12px}
+.wrap{max-width:1160px;margin:0 auto;padding-left:max(24px,env(safe-area-inset-left));padding-right:max(24px,env(safe-area-inset-right))}
+.muted{color:var(--muted)}.num{font-variant-numeric:tabular-nums}.small{font-size:.9rem}.tiny{font-size:.78rem}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.between{display:flex;justify-content:space-between;gap:12px;align-items:center}
+.stack{display:flex;flex-direction:column;gap:14px}
+.t-ok{color:var(--ok)}.t-warn{color:var(--warn)}.t-bad{color:var(--bad)}
+
+/* =========================================================
+   Header
+   ========================================================= */
+header.site{background:var(--surface);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:50}
+header.site .wrap{display:flex;align-items:center;gap:28px;height:76px}
+.logo{display:flex;align-items:center;gap:10px;background:none;border:0;padding:0;color:var(--ink)}
+.logo i{width:42px;height:42px;border-radius:13px;background:var(--grad);color:#fff;display:grid;place-items:center;font-style:normal;font-weight:700;font-size:.9rem}
+.logo b{font-weight:600;font-size:1.25rem;letter-spacing:.04em}
+nav.main{display:flex;gap:4px}
+nav.main button{background:none;border:0;padding:10px 16px;border-radius:999px;font-weight:500;font-size:1rem;color:var(--muted)}
+nav.main button:hover{color:var(--ink);background:var(--sunk)}
+nav.main button[aria-current="page"]{color:var(--primary-text);background:var(--primary-soft)}
+.hright{margin-left:auto;display:flex;align-items:center;gap:10px}
+.hbtn{display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:0 14px;border-radius:999px;border:1.5px solid var(--line-2);background:var(--surface);font-weight:500}
+.avatar{width:44px;height:44px;border-radius:50%;background:var(--primary-soft);color:var(--primary-text);display:grid;place-items:center;font-weight:600;border:0}
+@media (max-width:900px){nav.main{display:none}.hbtn .lbl{display:none}}
+
+/* =========================================================
+   Components
+   ========================================================= */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:54px;padding:0 28px;border-radius:999px;border:0;font-weight:600;font-size:1.05rem;white-space:nowrap}
+.btn-primary{background:var(--primary);color:var(--on-primary);box-shadow:0 10px 24px rgba(36,67,181,.28)}
+:root[data-theme="dark"] .btn-primary,:root[data-theme="hc"] .btn-primary{box-shadow:none}
+.btn-cta{background:var(--cta);color:var(--on-cta);box-shadow:0 10px 24px rgba(244,180,0,.28)}
+:root[data-theme="dark"] .btn-cta,:root[data-theme="hc"] .btn-cta{box-shadow:none}
+.btn-cta:hover{filter:brightness(.97)}
+.btn-white{background:#fff;color:#14204A}
+.btn-ghost{background:var(--surface);color:var(--ink);border:1.5px solid var(--line-2)}
+.btn-glass{background:rgba(255,255,255,.14);color:#fff;border:1.5px solid rgba(255,255,255,.35)}
+.btn-block{width:100%}
+.btn-sm{min-height:42px;padding:0 18px;font-size:.95rem}
+.btn[disabled]{opacity:.45;cursor:not-allowed;box-shadow:none}
+.link{background:none;border:0;padding:0;color:var(--primary-text);font-weight:600;text-decoration:none}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:24px;box-shadow:var(--shadow)}
+.pad{padding:22px 24px}
+.chip{display:inline-flex;align-items:center;gap:6px;min-height:44px;padding:0 18px;border-radius:999px;border:1.5px solid var(--line-2);background:var(--surface);font-weight:500;white-space:nowrap}
+.chip[aria-pressed="true"],.chip[aria-selected="true"]{background:var(--primary);border-color:var(--primary);color:var(--on-primary)}
+.chip[disabled]{opacity:.4;cursor:not-allowed}
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.pill{display:inline-flex;align-items:center;gap:5px;font-size:.82rem;font-weight:600;border-radius:999px;padding:4px 11px;white-space:nowrap}
+.p-ok{background:var(--ok-soft);color:var(--ok)}.p-warn{background:var(--warn-soft);color:var(--warn)}.p-bad{background:var(--bad-soft);color:var(--bad)}.p-info{background:var(--primary-soft);color:var(--primary-text)}
+.lbl{font-size:.85rem;color:var(--muted);font-weight:500}
+.sw{appearance:none;-webkit-appearance:none;width:52px;height:30px;border-radius:99px;background:var(--line-2);position:relative;flex:none;cursor:pointer;border:0}
+.sw::after{content:"";position:absolute;top:3px;left:3px;width:24px;height:24px;border-radius:50%;background:#fff;transition:left .15s;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+.sw:checked{background:var(--primary)}.sw:checked::after{left:25px}
+.swrow{display:flex;justify-content:space-between;gap:16px;align-items:center;padding:14px 0;cursor:pointer}
+.swrow+.swrow{border-top:1px solid var(--line)}
+.meter{height:8px;border-radius:99px;background:var(--sunk);overflow:hidden}
+.meter i{display:block;height:100%;border-radius:99px}
+.bg-ok{background:var(--ok)}.bg-warn{background:var(--warn)}.bg-bad{background:var(--bad)}
+.field{display:flex;flex-direction:column;gap:6px}
+.field label{font-size:.9rem;font-weight:600}
+.field input,.field select,.select{border:1.5px solid var(--line-2);background:var(--surface);border-radius:14px;padding:0 14px;min-height:52px;font-size:1rem}
+.infoline{font-size:.95rem;display:flex;gap:12px;align-items:flex-start;background:var(--primary-soft);border-radius:18px;padding:14px 18px}
+.infoline svg{flex:none;color:var(--primary-text);margin-top:2px}
+.toast{position:fixed;left:50%;bottom:32px;transform:translateX(-50%);z-index:300;background:var(--ink);color:var(--bg);padding:12px 20px;border-radius:14px;font-weight:500;max-width:90%;text-align:center}
+
+/* =========================================================
+   Hero + search
+   ========================================================= */
+.hero{position:relative;background:var(--grad);color:#fff;overflow:hidden}
+.hero .photo{position:absolute;inset:0;background:url("assets/hero-train.webp") center 47%/cover no-repeat}
+.hero .photo::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(12,22,58,.88) 0%,rgba(12,22,58,.6) 40%,rgba(12,22,58,.12) 78%,rgba(12,22,58,.05) 100%)}
+.band .photo{background-position:center 46%}
+.band .photo::after{background:linear-gradient(90deg,rgba(12,22,58,.9) 0%,rgba(12,22,58,.7) 50%,rgba(12,22,58,.35) 100%)}
+:root[data-theme="hc"] .hero .photo{display:none}
+.hero .wrap{position:relative;z-index:2}
+.home-hero{padding:40px 0 118px}
+.home-hero .k{font-size:1.05rem;font-weight:500;opacity:.85}
+.home-hero h1{font-size:clamp(2.2rem,4vw,3.1rem);font-weight:600;letter-spacing:-.045em;margin-top:2px}
+.home-hero h1 span{font-weight:400;opacity:.8}
+.home-hero .s{font-size:1.05rem;opacity:.85;margin-top:4px}
+.search{margin-top:-92px;position:relative;z-index:5;padding:20px 24px;display:flex;flex-direction:column;gap:16px}
+.sgrid{display:grid;grid-template-columns:minmax(0,1fr) 52px minmax(0,1fr) minmax(0,.8fr) minmax(0,.8fr);gap:0;align-items:stretch;border:1.5px solid var(--line-2);border-radius:22px}
+.sgrid>div{padding:10px 18px;display:flex;flex-direction:column;justify-content:center;min-width:0}
+.sgrid>div+div{border-left:1.5px solid var(--line)}
+.sgrid .swapcell{padding:0;display:grid;place-items:center;border-left:0!important}
+.sgrid .swapcell+div{border-left:0}
+.sgrid input,.sgrid select,.sgrid .pick{border:0;background:transparent;font-size:1.25rem;letter-spacing:-.02em;font-weight:500;padding:2px 0;width:100%;min-width:0;text-align:left}
+.sgrid input:focus,.sgrid select:focus{outline:none}
+.sgrid>div:focus-within{box-shadow:inset 0 -3px 0 var(--primary)}
+.sgrid .code{font-size:.8rem;color:var(--muted);font-weight:600;letter-spacing:.05em}
+.swap{width:46px;height:46px;border-radius:50%;border:1.5px solid var(--line-2);background:var(--surface);color:var(--primary-text);display:grid;place-items:center}
+@media (max-width:980px){.sgrid{grid-template-columns:minmax(0,1fr)}.sgrid>div+div{border-left:0;border-top:1.5px solid var(--line)}.sgrid .swapcell{display:none}}
+.srow{display:flex;justify-content:space-between;gap:20px;align-items:flex-end;flex-wrap:wrap}
+.ask{display:flex;align-items:center;gap:14px;background:rgba(255,255,255,.12);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.28);border-radius:20px;padding:10px;color:#fff;max-width:560px;margin-top:20px;width:100%;text-align:left}
+.ask:hover{background:rgba(255,255,255,.18)}
+.ask .orbi{width:46px;height:46px;border-radius:14px;flex:none;background:radial-gradient(circle at 30% 28%,#FFF7D6 0%,#F4B400 38%,#3B5CCC 78%,#1E3A93 100%);display:grid;place-items:center;color:#14204A}
+.ask .q{flex:1;display:flex;flex-direction:column;line-height:1.3;min-width:0}
+.ask .q b{font-weight:600}
+.ask .q span{opacity:.82;font-size:.9rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ask .speak{display:inline-flex;align-items:center;gap:6px;background:var(--cta);color:var(--on-cta);border-radius:12px;padding:0 16px;min-height:44px;font-weight:600;flex:none}
+.mic{width:48px;height:48px;border-radius:50%;border:0;background:#fff;color:#1F3BA3;display:grid;place-items:center;flex:none}
+.quick{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin:16px 0 28px}
+@media (max-width:980px){.quick{grid-template-columns:minmax(0,1fr)}}
+.qk{display:flex;gap:14px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:14px 16px;text-align:left;box-shadow:var(--shadow);width:100%}
+.qk:hover{border-color:var(--line-2)}
+.qk .ic svg{width:20px;height:20px}
+.qk .ic{width:40px;height:40px;border-radius:12px;background:var(--primary-soft);color:var(--primary-text);display:grid;place-items:center;flex:none;font-weight:700}
+.qk b{display:block;font-weight:600;letter-spacing:-.01em}
+.qk span.d{font-size:.86rem;color:var(--muted)}
+.qk .go{margin-left:auto;color:var(--primary-text);font-weight:600}
+
+/* =========================================================
+   Page band (inner pages)
+   ========================================================= */
+.band{padding:30px 0 64px}
+.band h1{font-size:clamp(1.7rem,3vw,2.3rem);font-weight:600;letter-spacing:-.04em}
+.band .s{opacity:.85;font-size:1rem;margin-top:4px}
+.band .crumb{background:none;border:0;color:#fff;opacity:.85;padding:0;margin-bottom:14px;font-weight:500;display:inline-flex;gap:6px;align-items:center}
+.lift{margin-top:-44px;position:relative;z-index:5}
+.cols{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:24px;align-items:start;margin-bottom:60px}
+@media (max-width:980px){.cols{grid-template-columns:minmax(0,1fr)}}
+.sticky{position:sticky;top:96px}
+
+/* results */
+.dates{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:8px;padding:10px}
+.dtile{border:1.5px solid transparent;background:var(--surface);border-radius:18px;padding:10px 6px;text-align:center;display:flex;flex-direction:column;gap:2px}
+.dtile b{font-size:1.4rem;font-weight:500;line-height:1.1}
+.dtile .tiny{font-weight:500}
+.dtile[aria-pressed="true"]{background:var(--primary);color:var(--on-primary)}
+.dtile[aria-pressed="true"] .muted{color:inherit;opacity:.85}
+.dtile:disabled{opacity:.35;cursor:not-allowed}
+@media (max-width:700px){.dates{grid-template-columns:repeat(4,minmax(0,1fr))}}
+.toolbar{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;margin:22px 0 14px}
+.seg{display:inline-flex;background:var(--sunk);border-radius:999px;padding:4px;gap:2px;flex-wrap:wrap}
+.seg button{border:0;background:none;border-radius:999px;min-height:44px;padding:0 18px;font-weight:500;color:var(--muted)}
+.seg button[aria-selected="true"]{background:var(--surface);color:var(--ink);box-shadow:var(--shadow);font-weight:600}
+.list{display:flex;flex-direction:column;gap:14px}
+.tcard{display:grid;grid-template-columns:minmax(0,2.1fr) minmax(0,1fr) auto;gap:24px;align-items:center;width:100%;text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:24px;box-shadow:var(--shadow);padding:20px 24px}
+.tcard:hover{border-color:var(--line-2)}
+.tcard.best{box-shadow:0 0 0 2px var(--primary),var(--shadow)}
+@media (max-width:820px){.tcard{grid-template-columns:minmax(0,1fr)}}
+.nm{font-weight:600;font-size:1.1rem}
+.no{color:var(--muted);font-weight:400}
+.tm-row{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:16px;align-items:center;margin-top:10px}
+.tm b{display:block;font-size:1.6rem;font-weight:500;line-height:1.05;font-variant-numeric:tabular-nums}
+.tm span{font-size:.8rem;color:var(--muted);font-weight:500;letter-spacing:.03em}
+.tm.r{text-align:right}
+.dur{text-align:center;font-size:.82rem;color:var(--muted)}
+.dur .ln{display:flex;align-items:center;gap:4px;margin:4px 0}
+.dur .ln i{flex:1;height:0;border-top:1.5px dashed var(--line-2)}
+.dur .ln b{width:9px;height:9px;border-radius:50%;background:var(--primary)}
+.dur .ln b.x{background:var(--warn)}
+.price{font-size:1.6rem;font-weight:600;font-variant-numeric:tabular-nums;color:var(--primary-text);text-align:right}
+.price small{display:block;font-size:.76rem;color:var(--muted);font-weight:400}
+
+/* detail */
+.timeline{list-style:none;margin:0;padding:0}
+.timeline li{display:grid;grid-template-columns:64px 18px minmax(0,1fr);gap:14px;align-items:start;padding-bottom:20px;position:relative}
+.timeline li::after{content:"";position:absolute;left:87px;top:18px;bottom:0;width:2px;background:var(--line-2)}
+.timeline li:last-child::after{display:none}
+.timeline .t{font-weight:600;font-size:1.1rem;font-variant-numeric:tabular-nums;text-align:right}
+.timeline .d{width:16px;height:16px;border-radius:50%;border:3px solid var(--primary);background:var(--surface);margin-top:4px;z-index:1}
+.chg{background:var(--warn-soft);color:var(--warn);border-radius:14px;padding:10px 14px;font-size:.92rem;display:block;margin-top:8px}
+.opt{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:14px;align-items:center;border:1.5px solid var(--line);border-radius:20px;padding:14px 18px;background:var(--surface);text-align:left;width:100%}
+.opt[aria-checked="true"]{border-color:var(--primary);box-shadow:0 0 0 1px var(--primary) inset;background:var(--primary-soft)}
+.opt .rd{width:22px;height:22px;border-radius:50%;border:2px solid var(--line-2);display:grid;place-items:center}
+.opt[aria-checked="true"] .rd{border-color:var(--primary)}
+.opt[aria-checked="true"] .rd::after{content:"";width:10px;height:10px;border-radius:50%;background:var(--primary)}
+
+/* travellers */
+.people{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+@media (max-width:700px){.people{grid-template-columns:minmax(0,1fr)}}
+.person{display:flex;flex-direction:column;gap:12px;padding:16px 18px;border:1.5px solid var(--line);border-radius:20px;background:var(--surface)}
+.person[aria-checked="true"]{border-color:var(--primary);background:var(--primary-soft)}
+.person.no{opacity:.55}
+.person .top{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:12px;align-items:center;cursor:pointer;background:none;border:0;padding:0;text-align:left;width:100%}
+.av{width:46px;height:46px;border-radius:50%;background:var(--sunk);color:var(--primary-text);display:grid;place-items:center;font-weight:600}
+.person[aria-checked="true"] .av{background:var(--primary);color:var(--on-primary)}
+.tick{width:26px;height:26px;border-radius:8px;border:2px solid var(--line-2);display:grid;place-items:center;color:transparent;font-size:.85rem;font-weight:700}
+.person[aria-checked="true"] .tick{background:var(--primary);border-color:var(--primary);color:var(--on-primary)}
+
+/* ticket */
+.ticket{max-width:720px;margin:-60px auto 60px;position:relative;z-index:5}
+.ticket .stub{border-top:2px dashed var(--line-2);position:relative;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:20px;align-items:center}
+.ticket .stub::before,.ticket .stub::after{content:"";position:absolute;top:-14px;width:26px;height:26px;border-radius:50%;background:var(--bg)}
+.ticket .stub::before{left:-14px}.ticket .stub::after{right:-14px}
+.pnr{font-size:2rem;font-weight:600;letter-spacing:.08em;font-variant-numeric:tabular-nums}
+.qr{width:150px;height:150px;background:#fff;border-radius:16px;padding:8px;border:1px solid var(--line)}
+
+/* live */
+.map{position:relative;height:520px;border-radius:24px;overflow:hidden;background:linear-gradient(180deg,#E9EDF8,#F7F8FC);border:1px solid var(--line)}
+:root[data-theme="dark"] .map{background:linear-gradient(180deg,#121A30,#0B0F1D)}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]):not([data-theme="hc"]) .map{background:linear-gradient(180deg,#121A30,#0B0F1D)}}
+:root[data-theme="hc"] .map{background:#fff;border:2px solid #000}
+.map svg{position:absolute;inset:0;width:100%;height:100%}
+.map .mtop{position:absolute;bottom:16px;left:16px;z-index:2}
+.stations{list-style:none;margin:0;padding:0}
+.stations li{display:grid;grid-template-columns:22px minmax(0,1fr) auto auto;gap:14px;align-items:center;padding:10px 0;position:relative}
+.stations li::before{content:"";position:absolute;left:10px;top:0;bottom:0;width:2px;background:var(--line-2)}
+.stations li:first-child::before{top:50%}.stations li:last-child::before{bottom:50%}
+.stations .dot{width:12px;height:12px;border-radius:50%;background:var(--surface);border:2.5px solid var(--line-2);margin-left:5px;z-index:1}
+.stations li.past .dot{background:var(--primary);border-color:var(--primary)}
+.stations li.past::before{background:var(--primary)}
+.stations li.now .dot{width:22px;height:22px;margin-left:0;background:var(--primary);border-color:var(--primary-soft);box-shadow:0 0 0 6px var(--primary-soft)}
+.pulse{animation:pulse 1.8s infinite}
+@keyframes pulse{0%{opacity:.6;r:12}100%{opacity:0;r:30}}
+
+/* dialogs, drawers, voice */
+.scrim{position:fixed;inset:0;z-index:100;background:rgba(10,18,48,.45);display:flex;justify-content:center;align-items:flex-start;padding:8vh 16px;overflow:auto;animation:fade .2s}
+.scrim.right{justify-content:flex-end;align-items:stretch;padding:0}
+.dialog{background:var(--surface);color:var(--ink);width:min(520px,100%);border-radius:28px;padding:28px;display:flex;flex-direction:column;gap:16px;animation:up .22s ease}
+.drawer{background:var(--surface);color:var(--ink);width:min(480px,100%);height:100%;overflow:auto;padding:28px;display:flex;flex-direction:column;gap:16px;animation:slide .22s ease}
+.dialog h2,.drawer h2{font-size:1.6rem;font-weight:600}
+.xbtn{width:44px;height:44px;border-radius:50%;border:1.5px solid var(--line-2);background:var(--surface);display:grid;place-items:center;flex:none}
+@keyframes up{from{transform:translateY(20px);opacity:.6}to{transform:none;opacity:1}}
+@keyframes slide{from{transform:translateX(30px);opacity:.6}to{transform:none;opacity:1}}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+.voice{background:var(--grad);color:#fff;width:min(460px,100%);height:100%;overflow:auto;padding:28px;display:flex;flex-direction:column;gap:16px;animation:slide .22s ease}
+.voice .xbtn{background:rgba(255,255,255,.15);border-color:rgba(255,255,255,.35);color:#fff}
+.orb{width:170px;height:170px;border-radius:50%;margin:16px auto 4px;background:radial-gradient(circle at 35% 30%,#FFF7D6 0%,#F4B400 24%,#6F87E0 56%,rgba(59,92,204,0) 72%);position:relative}
+.orb::after{content:"";position:absolute;inset:-16px;border-radius:50%;border:2px solid rgba(255,255,255,.35);animation:ring 1.6s infinite}
+.orb.idle::after{animation:none;opacity:.3}
+@keyframes ring{0%{transform:scale(.9);opacity:.8}100%{transform:scale(1.25);opacity:0}}
+.voice .said{font-size:1.35rem;font-weight:400;letter-spacing:-.02em;text-align:center;min-height:2.2em}
+.voice .status{text-align:center;opacity:.85}
+.voice .reply{background:rgba(255,255,255,.96);color:#121A33;border-radius:24px;padding:18px 20px;display:flex;flex-direction:column;gap:12px}
+.voice .reply .muted{color:#566079}
+.voice .sugg{display:flex;flex-direction:column;gap:8px;margin-top:auto}
+.voice .sugg button{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:16px;padding:12px 16px;text-align:left}
+.voice form{display:flex;gap:8px}
+.voice input{flex:1;min-width:0;border:0;border-radius:999px;padding:0 18px;min-height:50px;background:rgba(255,255,255,.96);color:#121A33}
+.faceid{position:fixed;inset:0;z-index:150;background:rgba(10,18,48,.55);display:grid;place-items:center;animation:fade .15s}
+.faceid div{background:var(--surface);border-radius:28px;padding:30px 36px;text-align:center;display:flex;flex-direction:column;gap:10px;align-items:center;min-width:260px}
+.faceid svg{width:68px;height:68px;color:var(--primary-text)}
+.fab{position:fixed;right:28px;bottom:28px;z-index:60;display:flex;align-items:center;gap:10px;background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:18px;padding:8px 18px 8px 8px;font-weight:600;box-shadow:0 14px 34px rgba(20,32,74,.18)}
+.fab[hidden],.tourbtn[hidden]{display:none}
+.fab span.m{width:44px;height:44px;border-radius:13px;background:radial-gradient(circle at 30% 28%,#FFF7D6 0%,#F4B400 38%,#3B5CCC 78%,#1E3A93 100%);color:#14204A;display:grid;place-items:center}
+.tourbtn{position:fixed;left:24px;bottom:28px;z-index:60;background:var(--surface);border:1.5px solid var(--line-2);border-radius:999px;padding:10px 18px;font-weight:600;box-shadow:var(--shadow)}
+.tourpop{position:fixed;left:24px;bottom:84px;z-index:61;width:330px;padding:16px;display:flex;flex-direction:column;gap:6px}
+.tourpop button{display:flex;gap:12px;align-items:center;text-align:left;border:0;background:none;border-radius:12px;padding:9px 10px}
+.tourpop button:hover{background:var(--sunk)}
+.tourpop .n{width:26px;height:26px;border-radius:50%;background:var(--primary-soft);color:var(--primary-text);display:grid;place-items:center;font-size:.8rem;font-weight:600;flex:none}
+.log{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.log li{display:grid;grid-template-columns:80px minmax(0,1fr);gap:12px;animation:fade .3s}
+.log .t{color:var(--muted);font-variant-numeric:tabular-nums}
+footer.site{border-top:1px solid var(--line);color:var(--muted);font-size:.85rem}
+footer.site .wrap{padding-block:22px 110px;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to main content</a>
+<header class="site"><div class="wrap">
+  <button class="logo" data-nav="home" aria-label="IRCTC home"><i>IR</i><b>IRCTC</b></button>
+  <nav class="main" aria-label="Main">
+    <button data-nav="home">Book tickets</button>
+    <button data-nav="trips">My trips</button>
+    <button data-nav="live">Where’s my train</button>
+  </nav>
+  <div class="hright" id="hright"></div>
+</div></header>
+<main id="main" tabindex="-1"></main>
+<footer class="site"><div class="wrap"><span>AI for PM · IRCTC reimagined · prototype with sample data</span><span>Built to WCAG 2.1 AA and UX4G accessibility guidance</span></div></footer>
+<button class="fab" id="fab" aria-label="Ask IRCTC assistant"><span class="m" aria-hidden="true"></span>Ask IRCTC</button>
+<button class="tourbtn" id="tourbtn" aria-expanded="false">Prototype tour</button>
+<div id="layer"></div>
+<div class="sr-only" id="live" role="status" aria-live="polite"></div>
+
+<script>
+/* =========================================================
+   Data
+   ========================================================= */
+const TODAY=(()=>{const d=new Date();d.setHours(0,0,0,0);return d})();
+const addDays=(d,n)=>new Date(d.getTime()+n*864e5);
+const DAYS=[...Array(7)].map((_,i)=>addDays(TODAY,i+1));
+const DELTA=[-22,0,-6,-15,3,5,-4];
+const TK=(()=>{const now=new Date();let w=new Date(TODAY);w.setHours(10,0,0,0);if(now>=w)w=addDays(w,1);const travel=addDays(new Date(w.getFullYear(),w.getMonth(),w.getDate()),1);return{win:w,travel,idx:Math.round((travel-DAYS[0])/864e5)}})();
+const CITY={Bengaluru:['Karnataka','SBC'],Patna:['Bihar','PNBE'],'New Delhi':['Delhi','NDLS'],Mumbai:['Maharashtra','CSMT'],Hyderabad:['Telangana','SC'],Chennai:['Tamil Nadu','MAS'],Kolkata:['West Bengal','HWH'],Varanasi:['Uttar Pradesh','BSB'],Agra:['Uttar Pradesh','AGC'],Kochi:['Kerala','ERS'],Pune:['Maharashtra','PUNE'],Lucknow:['Uttar Pradesh','LKO']};
+const ALIAS={bangalore:'Bengaluru',bengaluru:'Bengaluru',blr:'Bengaluru',patna:'Patna',delhi:'New Delhi','new delhi':'New Delhi',mumbai:'Mumbai',bombay:'Mumbai',hyderabad:'Hyderabad',chennai:'Chennai',kolkata:'Kolkata',varanasi:'Varanasi',banaras:'Varanasi',agra:'Agra',kochi:'Kochi',ernakulam:'Kochi',pune:'Pune',lucknow:'Lucknow'};
+const CLS={SL:['Sleeper','SL'],'3A':['AC 3 Tier','3A'],'2A':['AC 2 Tier','2A'],'1A':['First Class','1A']};
+const QUOTA={GN:'General',TQ:'Tatkal',SS:'Lower berth (60+, women 45+)',LD:'Ladies',HP:'Divyangjan'};
+const QSHORT={GN:'General',TQ:'Tatkal',SS:'Lower berth 60+',LD:'Ladies',HP:'Divyangjan'};
+const QHELP={GN:'Regular booking. Opens 60 days before travel.',TQ:'For tomorrow’s trains. Opens 10:00 AM (AC) and 11:00 AM (Sleeper) the day before. Higher fare; no refund once confirmed.',SS:'Lower berths kept for men aged 60+ and women aged 45+. Up to 2 travellers, and everyone must qualify.',LD:'Seats kept for women travelling alone or with children under 12.',HP:'For travellers with a disability card (UDID). Concession applies; one companion allowed.'};
+let PEOPLE=[
+ {id:'me',name:'Priya Kumari',rel:'You',age:21,g:'F'},
+ {id:'mom',name:'Meera Kumari',rel:'Mother',age:52,g:'F'},
+ {id:'dad',name:'Ramesh Kumar',rel:'Father',age:61,g:'M'},
+ {id:'arj',name:'Arjun Rao',rel:'Friend',age:22,g:'M'},
+];
+const TRAINS=[
+ {id:'hum',name:'Patliputra Humsafar',no:'22353',dep:['13:30','SMVT Bengaluru','SMVB',0],arr:['06:15','Patliputra Jn','PPTA',2],mins:2445,near:'Patliputra Jn is 6 km from Patna Jn',
+  cls:{'3A':{f:2980,k:'avl',n:24,p:99,lb:82}},tq:{'3A':{p:58,c:400}},stops:['Vijayawada Jn','Nagpur Jn','Itarsi Jn','Prayagraj Jn']},
+ {id:'san',name:'Sanghamitra Express',no:'12295',dep:['09:00','KSR Bengaluru','SBC',0],arr:['13:40','Danapur','DNR',2],mins:3160,near:'Danapur is 12 km from Patna Jn',
+  cls:{SL:{f:1005,k:'wl',n:34,p:41,lb:20},'3A':{f:2640,k:'wl',n:12,p:78,lb:40},'2A':{f:3850,k:'avl',n:6,p:99,lb:55}},tq:{SL:{p:49,c:200},'3A':{p:31,c:400},'2A':{p:44,c:500}},stops:['Chennai Central','Vijayawada Jn','Nagpur Jn','Itarsi Jn']},
+ {id:'ypr',name:'Yesvantpur–Patna Express',no:'12579',dep:['23:40','Yesvantpur Jn','YPR',0],arr:['05:10','Patna Jn','PNBE',3],mins:3210,
+  cls:{SL:{f:980,k:'avl',n:52,p:99,lb:68},'3A':{f:2560,k:'wl',n:46,p:24,lb:15}},tq:{SL:{p:72,c:200},'3A':{p:40,c:400}},stops:['Kacheguda','Nagpur Jn','Jabalpur']},
+ {id:'ngp',conn:true,name:'Vande Bharat Sleeper + Sampark Kranti',no:'20651 · 12391',via:'Nagpur',gap:'2 hr 20 min',dep:['20:00','KSR Bengaluru','SBC',0],arr:['07:45','Patna Jn','PNBE',2],mins:2145,
+  legs:[{n:'Vande Bharat Sleeper',no:'20651',a:['20:00','KSR Bengaluru',0],b:['13:10','Nagpur Jn',1]},{n:'Sampark Kranti',no:'12391',a:['15:30','Nagpur Jn',1],b:['07:45','Patna Jn',2]}],
+  cls:{'3A':{f:2860,k:'avl',n:18,p:97,lb:74},'2A':{f:4120,k:'wl',n:4,p:90,lb:55}}},
+ {id:'pry',conn:true,name:'Prayagraj Express + Vibhuti Express',no:'12251 · 12333',via:'Prayagraj',gap:'3 hr 05 min',dep:['06:40','Yesvantpur Jn','YPR',0],arr:['01:05','Patna Jn','PNBE',2],mins:2545,
+  legs:[{n:'Prayagraj Express',no:'12251',a:['06:40','Yesvantpur Jn',0],b:['14:20','Prayagraj Jn',1]},{n:'Vibhuti Express',no:'12333',a:['17:25','Prayagraj Jn',1],b:['01:05','Patna Jn',2]}],
+  cls:{SL:{f:1120,k:'avl',n:40,p:99,lb:64},'3A':{f:2790,k:'avl',n:9,p:99,lb:51}}},
+];
+const LIVE={no:'12724',name:'Telangana Express',from:'New Delhi',to:'Hyderabad',late:12,pf:2,now:7,
+ stations:[['New Delhi','06:25','06:25'],['Agra Cantt','08:20','08:24'],['Gwalior','09:45','09:51'],['Jhansi','10:55','11:04'],['Bhopal Jn','14:00','14:10'],['Itarsi Jn','15:35','15:46'],['Nagpur Jn','19:40','19:52'],['Balharshah','22:05','22:17'],['Kazipet Jn','01:40','01:52'],['Secunderabad','03:35','03:45'],['Hyderabad Deccan','04:10','04:20']]};
+
+/* =========================================================
+   State + helpers
+   ========================================================= */
+const S={auth:false,view:'home',stack:[],from:'Bengaluru',to:'Patna',date:1,quota:'GN',pax:['me'],guestCount:1,berth:{},
+  rtab:'all',cls:'3A',sort:'best',sel:null,selCls:null,opts:{only:true,upg:true,ins:true},
+  trips:[{kind:'wl',name:'Telangana Express',no:'12724',route:'New Delhi → Hyderabad',date:'Sun, 8 Nov',cls:'SL',st:'Waitlist 5',p:82,hist:[['3 days ago','Booked at Waitlist 12'],['Yesterday','Moved to Waitlist 8'],['Today','Moved to Waitlist 5']]}],
+  tk:null,flowMode:null,afterSignin:null};
+const $=(s,el=document)=>el.querySelector(s);
+const $$=(s,el=document)=>[...el.querySelectorAll(s)];
+const R=n=>'₹'+Math.round(n).toLocaleString('en-IN');
+const fd=d=>d.toLocaleDateString('en-IN',{weekday:'short',day:'numeric',month:'short'});
+const dd=(i,off=0)=>fd(addDays(DAYS[i],off));
+const dur=m=>{const d=Math.floor(m/1440),h=Math.floor(m%1440/60),mi=m%60;return [d?`${d}d`:'',h?`${h}h`:'',mi?`${mi}m`:''].filter(Boolean).join(' ')};
+const durLong=m=>{const d=Math.floor(m/1440),h=Math.floor(m%1440/60),mi=m%60;return [d?`${d} day${d>1?'s':''}`:'',h?`${h} hr`:'',mi?`${mi} min`:''].filter(Boolean).join(' ')};
+const person=id=>PEOPLE.find(p=>p.id===id);
+const initials=n=>n.split(' ').map(w=>w[0]).slice(0,2).join('');
+const eligSS=p=>(p.g==='M'&&p.age>=60)||(p.g==='F'&&p.age>=45);
+const eligLD=p=>p.g==='F';
+const tone=p=>p>=75?'ok':p>=45?'warn':'bad';
+const paxCount=()=>S.auth?S.pax.length:S.guestCount;
+const FEE=24;
+function announce(m){const l=$('#live');l.textContent='';setTimeout(()=>l.textContent=m,40)}
+function toast(m){const d=document.createElement('div');d.className='toast';d.setAttribute('role','status');d.textContent=m;document.body.appendChild(d);setTimeout(()=>d.remove(),2600)}
+const I={
+ back:'<svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+ swap:'<svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8h16M20 8l-4-4M20 8l-4 4M20 16H4M4 16l4-4M4 16l4 4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+ wave:'<svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 10v4M8 7v10M12 4v16M16 7v10M20 10v4" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>',
+ mic:'<svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3" fill="currentColor"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
+ ticket:'<svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16v4a2 2 0 0 0 0 4v4H4v-4a2 2 0 0 0 0-4z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>',
+ clock:'<svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 7v5l3 2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
+ pin:'<svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="9.5" r="2.5" fill="currentColor"/></svg>',
+ info:'<svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 11v6M12 7.5v.5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>',
+ aa:'<svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 18l5-12 5 12M5 14h6M15 18l3-7 3 7M16 16h4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+ face:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M9 9v1.5M15 9v1.5M12 9v4h-1M9.5 16c1.5 1 3.5 1 5 0" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>',
+ x:'<svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>',
+};
+function sky(){return `<div class="photo" aria-hidden="true"></div>`}
+function skyOld(h=300){return `<div class="sky" aria-hidden="true"><svg viewBox="0 0 400 ${h}" preserveAspectRatio="xMaxYMax meet">
+ <g fill="var(--sky-back)"><rect x="18" y="${h-130}" width="10" height="130"/><path d="M15 ${h-128} q8 -18 16 0z"/><rect x="50" y="${h-90}" width="64" height="90"/><path d="M50 ${h-90} c0 -30 32 -38 32 -56 c0 18 32 26 32 56z"/><rect x="340" y="${h-110}" width="10" height="110"/><path d="M337 ${h-108} q8 -18 16 0z"/></g>
+ <g fill="var(--sky-front)"><rect x="0" y="${h-16}" width="400" height="16"/><rect x="150" y="${h-96}" width="110" height="96"/><path d="M150 ${h-96} C150 ${h-150} 190 ${h-158} 205 ${h-188} C220 ${h-158} 260 ${h-150} 260 ${h-96}Z"/><rect x="204" y="${h-210}" width="2" height="24"/><circle cx="205" cy="${h-212}" r="3"/>
+  <rect x="110" y="${h-165}" width="13" height="165"/><path d="M107 ${h-163} q9.5 -22 19 0z"/><rect x="106" y="${h-122}" width="21" height="4"/><rect x="106" y="${h-76}" width="21" height="4"/>
+  <rect x="287" y="${h-165}" width="13" height="165"/><path d="M284 ${h-163} q9.5 -22 19 0z"/><rect x="283" y="${h-122}" width="21" height="4"/><rect x="283" y="${h-76}" width="21" height="4"/>
+  <path d="M158 ${h-96} c0 -15 11 -19 13 -28 c2 9 13 13 13 28z"/><path d="M226 ${h-96} c0 -15 11 -19 13 -28 c2 9 13 13 13 28z"/>
+  <rect x="180" y="${h-66}" width="50" height="50" rx="25" fill="var(--sky-back)"/></g></svg></div>`}
+
+/* =========================================================
+   Seat status by booking type
+   ========================================================= */
+function stat(x,c,q=S.quota,di=S.date){
+  const b=x.cls[c];if(!b)return null;
+  if(q==='TQ'){if(x.conn||!x.tq||!x.tq[c])return null;const t=x.tq[c];return{kind:'tq',p:t.p,fare:b.f+t.c,label:'Opens 10:00 AM',word:`${t.p}% chance in Tatkal`,tone:tone(t.p),lb:b.lb}}
+  if(q==='SS'){const n=Math.max(1,6+Math.round(DELTA[di]/6));return{kind:'avl',n,p:99,fare:b.f,label:`${n} lower berths left`,word:'Lower berth guaranteed',tone:'ok',lb:100}}
+  if(q==='LD'){if(c!=='SL'&&c!=='3A')return null;const n=Math.max(1,4+Math.round(DELTA[di]/8));return{kind:'avl',n,p:99,fare:b.f,label:`${n} seats left`,word:'Ladies quota',tone:'ok',lb:b.lb}}
+  if(q==='HP'){return{kind:'avl',n:2,p:99,fare:Math.round(b.f*.25),label:'2 seats left',word:'75% concession',tone:'ok',lb:90}}
+  const dl=DELTA[di];let kind,n,p;
+  if(b.k==='avl'&&b.n+dl>0){kind='avl';n=Math.max(1,b.n+Math.round(dl/2));p=99}
+  else if(b.k==='avl'){kind='wl';n=Math.max(1,Math.round(-(b.n+dl)/1.5));p=Math.max(40,90+b.n+dl)}
+  else{p=Math.max(5,Math.min(99,b.p+dl));kind=p>=97?'avl':'wl';n=kind==='avl'?Math.max(1,Math.round((p-96)*4)):Math.max(1,Math.round((100-p)*.55))}
+  const lb=Math.max(5,Math.min(95,b.lb+Math.round(dl/2)));
+  return{kind,n,p,fare:b.f,lb,tone:kind==='avl'?'ok':tone(p),label:kind==='avl'?`Available ${n}`:`Waitlist ${n}`,word:kind==='avl'?'Confirmed now':`${p}% chance to confirm`};
+}
+function visible(){
+  let L=TRAINS.filter(x=>Object.keys(x.cls).some(c=>stat(x,c)));
+  const counts={all:L.length,direct:L.filter(x=>!x.conn).length,conn:L.filter(x=>x.conn).length};
+  if(S.rtab==='direct')L=L.filter(x=>!x.conn);if(S.rtab==='conn')L=L.filter(x=>x.conn);
+  const classes=['1A','2A','3A','SL'].filter(c=>L.some(x=>stat(x,c)));
+  if(!classes.includes(S.cls))S.cls=classes.includes('3A')?'3A':classes[0];
+  const withCls=L.filter(x=>stat(x,S.cls));
+  const senior=S.auth&&S.pax.some(id=>eligSS(person(id)));
+  const sc={best:x=>{const s=stat(x,S.cls);return -(s.p/100*.6+(senior?s.lb/100*.25:0)+(1-(x.mins-2100)/1300)*.15)},early:x=>x.dep[0],fast:x=>x.mins,cheap:x=>stat(x,S.cls).fare,sure:x=>-stat(x,S.cls).p};
+  withCls.sort((a,b)=>{const A=sc[S.sort](a),B=sc[S.sort](b);return A<B?-1:A>B?1:0});
+  return{list:withCls,counts,classes,missing:L.length-withCls.length};
+}
+
+/* =========================================================
+   Header
+   ========================================================= */
+function header(){
+  $('#hright').innerHTML=`<button class="hbtn" data-a11y aria-haspopup="dialog">${I.aa}<span class="lbl">Accessibility</span></button>
+   <button class="hbtn" data-lang aria-label="Change language"><span lang="hi">हिं</span><span class="lbl">/ EN</span></button>
+   ${S.auth?`<button class="avatar" data-nav="profile" aria-label="Your account, Priya Kumari">PK</button>`:`<button class="btn btn-primary btn-sm" data-signin="dialog">Sign in</button>`}`;
+  const sec=['results','detail','travellers','review','ticket'].includes(S.view)?'home':S.view;
+  $$('nav.main [data-nav]').forEach(b=>b.setAttribute('aria-current',b.dataset.nav===sec?'page':'false'));
+}
+
+/* =========================================================
+   Pages
+   ========================================================= */
+function vHome(){
+  const [st,code]=CITY[S.to]||['',''];const [,fcode]=CITY[S.from]||['',''];
+  const pc=paxCount();
+  const paxTxt=S.auth?(S.pax.length===1?person(S.pax[0]).name:`${S.pax.length} travellers`):`${pc} traveller${pc>1?'s':''}`;
+  const up=S.trips[0];
+  return `<section class="hero home-hero">${sky(320)}<div class="wrap">
+   <p class="k">Going to</p><h1 id="h1" tabindex="-1">${S.to}${st?`, <span>${st}</span>`:''}</h1><p class="s">from ${S.from}${S.auth?' · Welcome back, Priya':''}</p>
+   <button class="ask" data-voice aria-label="Ask IRCTC by voice or text"><span class="orbi">${I.wave}</span><span class="q"><b>Ask IRCTC in your words</b><span>“Tatkal to Patna tomorrow for me and dad in 3AC”</span></span><span class="speak">${I.mic}Speak</span></button>
+  </div></section>
+  <div class="wrap">
+  <form class="card search" id="searchForm" autocomplete="off">
+   <div class="sgrid">
+    <div><label class="lbl" for="from">From</label><input id="from" value="${S.from}" list="cities"><span class="code">${fcode} · all stations</span></div>
+    <div class="swapcell"><button type="button" class="swap" id="swap" aria-label="Swap from and to">${I.swap}</button></div>
+    <div><label class="lbl" for="to">To</label><input id="to" value="${S.to}" list="cities"><span class="code">${code} · all stations</span></div>
+    <div><label class="lbl" for="date">Date</label><select id="date">${DAYS.map((d,i)=>`<option value="${i}" ${i===S.date?'selected':''} ${S.quota==='TQ'&&i!==TK.idx?'disabled':''}>${i===0?'Tomorrow · ':''}${fd(d)}</option>`).join('')}</select><span class="code">${S.quota==='TQ'?'Tatkal: tomorrow only':'Live seats, no refresh'}</span></div>
+    <div><span class="lbl" id="paxLbl">Travellers</span><button type="button" class="pick" id="paxPick" aria-labelledby="paxLbl paxPick">${paxTxt}</button><span class="code">${S.auth?'Saved & verified':'Names added at booking'}</span></div>
+   </div>
+   <datalist id="cities">${Object.keys(CITY).map(c=>`<option value="${c}">`).join('')}</datalist>
+   <div class="srow"><div style="flex:1;min-width:280px"><p class="lbl" id="qLbl" style="margin-bottom:8px">Booking type</p>
+     <div class="chips" role="group" aria-labelledby="qLbl">${Object.keys(QUOTA).map(k=>`<button type="button" class="chip" data-quota="${k}" aria-pressed="${S.quota===k}">${QSHORT[k]}</button>`).join('')}</div>
+     <p class="small muted" style="margin-top:10px">${QHELP[S.quota]}</p></div>
+    <button class="btn btn-cta" type="submit" style="min-width:220px;min-height:60px;font-size:1.15rem">Find trains</button></div>
+  </form>
+  <div class="quick">
+   ${S.auth&&up?`<button class="qk" data-nav="trips"><span class="ic">${I.ticket}</span><span><b>${up.name} · ${up.st}</b><span class="d">${up.date} · ${up.p}% chance to confirm</span></span><span class="go">→</span></button>`
+    :`<button class="qk" data-signin="dialog"><span class="ic">${I.face}</span><span><b>Sign in with one tap</b><span class="d">Face ID or DigiLocker · no CAPTCHA</span></span><span class="go">→</span></button>`}
+   <button class="qk" data-quickquota="TQ"><span class="ic">${I.clock}</span><span><b>Tatkal for ${fd(TK.travel)}</b><span class="d">Opens 10:00 AM · auto-book it now</span></span><span class="go">→</span></button>
+   <button class="qk" data-nav="live"><span class="ic">${I.pin}</span><span><b>Where’s my train?</b><span class="d">Track ${LIVE.no} live on a map</span></span><span class="go">→</span></button>
+  </div></div>`;
+}
+function band(title,sub,crumb){return `<section class="hero band">${sky(240)}<div class="wrap">${crumb?`<button class="crumb" data-back>${I.back}${crumb}</button>`:''}<h1 id="h1" tabindex="-1">${title}</h1>${sub?`<p class="s">${sub}</p>`:''}</div></section>`}
+function vResults(){
+  const {list,counts,classes,missing}=visible();const pc=paxCount();
+  const tabs=[['all','All',counts.all],['direct','Direct',counts.direct],['conn','Connecting',counts.conn]];
+  return `${band(`${S.from} to ${S.to}`,`${fd(DAYS[S.date])} · ${pc} traveller${pc>1?'s':''} · ${QSHORT[S.quota]}`,'Change search')}
+  <div class="wrap">
+   <div class="card lift dates" role="group" aria-label="Date">${DAYS.map((d,i)=>{const dis=S.quota==='TQ'&&i!==TK.idx;return `<button class="dtile" data-date="${i}" aria-pressed="${S.date===i}" ${dis?'disabled':''}><span class="tiny muted">${d.toLocaleDateString('en-IN',{weekday:'short'})}</span><b>${d.getDate()}</b><span class="tiny muted">${d.toLocaleDateString('en-IN',{month:'short'})}</span></button>`}).join('')}</div>
+   <div class="toolbar">
+    <div class="seg" role="tablist" aria-label="Journey type">${tabs.map(([k,l,n])=>`<button role="tab" data-rtab="${k}" aria-selected="${S.rtab===k}">${l} <span class="muted">${n}</span></button>`).join('')}</div>
+    <div class="row"><div class="seg" role="tablist" aria-label="Class">${classes.map(c=>`<button role="tab" data-cls="${c}" aria-selected="${S.cls===c}" title="${CLS[c][0]}">${c} <span class="muted small">${CLS[c][0]}</span></button>`).join('')}</div>
+     <label class="sr-only" for="sort">Sort trains</label><select class="select" id="sort" style="min-height:52px;border-radius:999px">${[['best','Best for you'],['early','Earliest'],['fast','Fastest'],['cheap','Cheapest'],['sure','Best chance of a seat']].map(([k,l])=>`<option value="${k}" ${S.sort===k?'selected':''}>${l}</option>`).join('')}</select></div>
+   </div>
+   ${S.quota==='TQ'?`<div class="infoline" style="margin-bottom:14px">${I.info}<span><b>Tatkal for ${fd(TK.travel)}</b> opens ${fd(TK.win)} at 10:00 AM. Choose a train and we’ll book it the moment it opens. Connecting trips aren’t sold in Tatkal; switch to General to see them.</span></div>`
+    :counts.conn&&S.rtab!=='direct'?`<div class="infoline" style="margin-bottom:14px">${I.info}<span><b>Connecting trips</b> are two trains on one ticket. If the first runs late and you miss the second, you’re moved to the next train for free.</span></div>`:''}
+   <p class="small" style="margin-bottom:12px" aria-live="polite"><b>${list.length} trains</b> <span class="muted">· seats updated just now</span></p>
+   <div class="list">${list.map((x,i)=>tcard(x,i===0&&S.sort==='best')).join('')||`<p class="card pad">No ${CLS[S.cls][0]} seats here. Try another class.</p>`}
+    ${missing?`<p class="small muted" style="text-align:center">${missing} more train${missing>1?'s':''} without ${CLS[S.cls][0]}. Switch class above.</p>`:''}</div>
+   <div style="height:60px"></div></div>`;
+}
+function tcard(x,best){
+  const s=stat(x,S.cls);
+  return `<button class="tcard ${best?'best':''}" data-open="${x.id}">
+   <div><div class="row"><span class="nm">${x.name} <span class="no">(${x.no})</span></span>${best?'<span class="pill p-info">Best for you</span>':''}</div>
+    <div class="tm-row"><div class="tm"><span>${dd(S.date,x.dep[3]).toUpperCase()}</span><b>${x.dep[0]}</b><span>${x.dep[1]}</span></div>
+     <div class="dur">${durLong(x.mins)}<div class="ln"><b></b><i></i>${x.conn?'<b class="x"></b><i></i>':''}<b></b></div>${x.conn?`Change at ${x.via} · ${x.gap}`:'Direct'}</div>
+     <div class="tm r"><span>${dd(S.date,x.arr[3]).toUpperCase()}</span><b>${x.arr[0]}</b><span>${x.arr[1]}</span></div></div></div>
+   <div><span class="pill p-${s.tone}">${s.kind==='avl'?'✓':s.kind==='tq'?'◷':s.tone==='bad'?'✕':'◔'} ${s.label}</span><p class="small muted" style="margin-top:6px">${s.word}</p>${x.near?`<p class="tiny t-warn" style="margin-top:4px">${x.near}</p>`:''}</div>
+   <div class="price">${R(s.fare)}<small>per person · ${S.cls}</small></div>
+  </button>`;
+}
+function vDetail(){
+  const x=TRAINS.find(t=>t.id===S.sel);const cs=Object.keys(x.cls).filter(c=>stat(x,c));
+  if(!S.selCls||!cs.includes(S.selCls))S.selCls=cs.includes(S.cls)?S.cls:cs[0];
+  const s=stat(x,S.selCls),pc=paxCount(),total=s.fare*pc;
+  const tl=x.conn?`<ol class="timeline">
+     <li><span class="t">${x.legs[0].a[0]}</span><span class="d"></span><span><b>${x.legs[0].a[1]}</b><br><span class="small muted">${dd(S.date,x.legs[0].a[2])} · ${x.legs[0].n} (${x.legs[0].no})</span></span></li>
+     <li><span class="t">${x.legs[0].b[0]}</span><span class="d"></span><span><b>${x.legs[0].b[1]}</b><br><span class="small muted">${dd(S.date,x.legs[0].b[2])}</span><span class="chg">Change trains · ${x.gap} · same station. Protected connection: miss it and you’re moved to the next train free.</span></span></li>
+     <li><span class="t">${x.legs[1].a[0]}</span><span class="d"></span><span><b>${x.legs[1].a[1]}</b><br><span class="small muted">${x.legs[1].n} (${x.legs[1].no})</span></span></li>
+     <li><span class="t">${x.legs[1].b[0]}</span><span class="d"></span><span><b>${x.legs[1].b[1]}</b><br><span class="small muted">${dd(S.date,x.legs[1].b[2])}</span></span></li></ol>`
+   :`<ol class="timeline"><li><span class="t">${x.dep[0]}</span><span class="d"></span><span><b>${x.dep[1]}</b><br><span class="small muted">${dd(S.date,x.dep[3])}</span></span></li>
+     <li><span class="t"></span><span class="d" style="border-color:var(--line-2)"></span><span class="small muted">${x.stops.length} stops · ${x.stops.join(', ')}</span></li>
+     <li><span class="t">${x.arr[0]}</span><span class="d"></span><span><b>${x.arr[1]}</b><br><span class="small muted">${dd(S.date,x.arr[3])}${x.near?` · ${x.near}`:''}</span></span></li></ol>`;
+  const cta=s.kind==='tq'?`<button class="btn btn-cta btn-block" data-tatkal>Auto-book at 10:00 AM</button>`:s.kind==='wl'?`<button class="btn btn-cta btn-block" data-book>Book on waitlist · ${s.p}% chance</button>`:`<button class="btn btn-cta btn-block" data-book>Continue to travellers</button>`;
+  const senior=S.auth&&S.pax.some(id=>eligSS(person(id)));
+  return `${band(x.name,`${x.no} · ${durLong(x.mins)} · ${x.conn?'2 trains, 1 ticket':'Direct'} · ${fd(DAYS[S.date])}`,'Back to trains')}
+  <div class="wrap cols lift">
+   <div class="stack">
+    <div class="card pad"><h2 style="font-size:1.2rem;font-weight:600;margin-bottom:18px">Journey</h2>${tl}<button class="link" data-nav="live">Where is this train right now? →</button></div>
+    ${s.kind==='wl'?`<div class="card pad stack" style="gap:10px"><div class="between"><b>Chance to confirm</b><b class="t-${s.tone}" style="font-size:1.4rem">${s.p}%</b></div><div class="meter" role="img" aria-label="${s.p} percent"><i class="bg-${s.tone}" style="width:${s.p}%"></i></div><p class="small muted">Based on how this train’s waitlist cleared on similar days. If it doesn’t confirm by chart time, you get a full refund automatically.</p></div>`:''}
+   </div>
+   <div class="card pad stack sticky">
+    <div class="between"><h2 style="font-size:1.2rem;font-weight:600">Choose class</h2><button class="link small" data-quotadlg>${QSHORT[S.quota]} · change</button></div>
+    <div class="stack" role="radiogroup" aria-label="Class" style="gap:10px">${cs.map(c=>{const t=stat(x,c);return `<button class="opt" role="radio" data-selcls="${c}" aria-checked="${S.selCls===c}"><span class="rd" aria-hidden="true"></span><span><b>${CLS[c][0]}</b> <span class="muted">${c}</span><br><span class="small t-${t.tone}">${t.label} · ${t.word}</span>${senior&&t.kind!=='tq'?`<br><span class="tiny muted">Lower berth chance ${t.lb}%</span>`:''}</span><b class="num">${R(t.fare)}</b></button>`}).join('')}</div>
+    <div class="between" style="border-top:1px solid var(--line);padding-top:14px"><span class="muted">${pc} × ${R(s.fare)}</span><b class="num" style="font-size:1.5rem">${R(total)}</b></div>
+    ${cta}
+   </div>
+  </div>`;
+}
+function vTravellers(){
+  const q=S.quota;const ok=p=>q==='SS'?eligSS(p):q==='LD'?eligLD(p):true;const max=q==='SS'?2:6;
+  const invalid=!S.pax.length||S.pax.some(id=>!ok(person(id)))||S.pax.length>max;
+  const label=S.flowMode==='pick'?'Done':S.flowMode==='tatkal'?'Back to Tatkal':S.flowMode==='review'?'Back to review':'Continue to review';
+  return `${band('Who’s travelling?',`${S.pax.length} selected · up to ${max} for ${QSHORT[q]}`,'Back')}
+  <div class="wrap cols lift">
+   <div class="card pad stack">
+    ${q==='SS'||q==='LD'||q==='HP'?`<div class="infoline">${I.info}<span><b>${QUOTA[q]}:</b> ${QHELP[q]}</span></div>`:''}
+    ${q==='TQ'?`<div class="infoline">${I.info}<span>Tatkal needs ID-verified travellers. Everyone in your list is verified through DigiLocker.</span></div>`:''}
+    <div class="people" role="group" aria-label="Saved travellers">${PEOPLE.map(p=>{const on=S.pax.includes(p.id),can=ok(p);const berth=S.berth[p.id]||(eligSS(p)?'Lower':'No preference');
+      return `<div class="person ${can?'':'no'}" aria-checked="${on}"><button class="top" data-pax="${p.id}" role="checkbox" aria-checked="${on}" ${can?'':'aria-disabled="true"'}><span class="av">${initials(p.name)}</span><span><b>${p.name}</b><br><span class="small muted">${p.rel} · ${p.age} · ${p.g==='F'?'Female':p.g==='M'?'Male':'Other'}</span>${eligSS(p)?'<br><span class="tiny t-ok">Eligible for lower-berth quota</span>':''}${!can?`<br><span class="tiny t-bad">Doesn’t qualify for ${QSHORT[q]}</span>`:''}</span><span class="tick" aria-hidden="true">✓</span></button>
+      ${on&&can&&q!=='SS'?`<div class="between"><label class="small muted" for="b-${p.id}">Berth</label><select class="select" id="b-${p.id}" data-berth="${p.id}" style="min-height:42px">${['No preference','Lower','Middle','Upper','Side lower'].map(o=>`<option ${berth===o?'selected':''}>${o}</option>`).join('')}</select></div>`:''}</div>`}).join('')}</div>
+    <button class="btn btn-ghost" data-addpax style="align-self:flex-start">+ Add a traveller</button>
+   </div>
+   <div class="card pad stack sticky">
+    <h2 style="font-size:1.2rem;font-weight:600">Your group</h2>
+    ${S.pax.length?S.pax.map(id=>{const p=person(id);return `<div class="between"><span>${p.name}</span><span class="small muted">${q==='SS'?'Lower (quota)':S.berth[id]||(eligSS(p)?'Lower':'Any berth')}</span></div>`}).join(''):'<p class="muted">Pick at least one traveller.</p>'}
+    <p class="small muted">Saved travellers are verified once through DigiLocker, so you never type ID numbers again. Ticket and alerts go to +91 98••• ••210.</p>
+    ${invalid&&S.pax.length?`<p class="small t-bad">${S.pax.length>max?`Up to ${max} travellers for this booking type.`:'Remove travellers who don’t qualify for this booking type.'}</p>`:''}
+    <button class="btn btn-cta btn-block" data-paxdone ${invalid?'disabled':''}>${label}</button>
+   </div></div>`;
+}
+function totals(){const x=TRAINS.find(t=>t.id===S.sel),s=stat(x,S.selCls),n=S.pax.length,ins=S.opts.ins?Math.ceil(.45*n):0;return{x,s,n,fare:s.fare*n,ins,sum:s.fare*n+FEE+ins}}
+function vReview(){
+  const t=totals(),x=t.x,s=t.s,wl=s.kind==='wl',keep=S.selCls==='SL'?120:S.selCls==='3A'?180:200;
+  return `${band('Review and pay','Nothing to type. Check it and go.','Back')}
+  <div class="wrap cols lift">
+   <div class="stack">
+    <div class="card pad"><div class="between"><b style="font-size:1.15rem">${x.name}</b><span class="pill p-${s.tone}">${s.label}</span></div>
+     <div class="tm-row"><div class="tm"><b>${x.dep[0]}</b><span>${x.dep[1]} · ${dd(S.date,x.dep[3])}</span></div><div class="dur">${durLong(x.mins)}<div class="ln"><b></b><i></i><b></b></div>${CLS[S.selCls][0]}</div><div class="tm r"><b>${x.arr[0]}</b><span>${x.arr[1]} · ${dd(S.date,x.arr[3])}</span></div></div>
+     <p class="small muted" style="margin-top:10px">Booking type: ${QUOTA[S.quota]}</p></div>
+    <div class="card pad"><div class="between"><b>Travellers</b><button class="link small" data-go="travellers" data-mode="review">Edit</button></div>
+     ${S.pax.map(id=>{const p=person(id);return `<div class="between" style="padding-top:12px"><span>${p.name}<br><span class="small muted">${p.age} · ${p.g==='F'?'F':'M'} · ✓ verified</span></span><span class="small">${S.quota==='SS'?'Lower (quota)':S.berth[id]||(eligSS(p)?'Lower':'Any berth')}</span></div>`}).join('')}</div>
+    <div class="card pad"><b>Your choices</b>
+     ${!wl?`<label class="swrow"><span>Only book if everyone gets a berth<br><span class="small muted">No RAC or split bookings</span></span><input type="checkbox" class="sw" data-opt="only" ${S.opts.only?'checked':''}></label>`:`<label class="swrow"><span>Switch me to a confirmed seat if this won’t clear<br><span class="small muted">We ask before paying any difference</span></span><input type="checkbox" class="sw" checked></label>`}
+     <label class="swrow"><span>Upgrade me free if a higher class has space</span><input type="checkbox" class="sw" data-opt="upg" ${S.opts.upg?'checked':''}></label>
+     <label class="swrow"><span>Travel insurance<br><span class="small muted">₹0.45 each · up to ₹10 lakh cover</span></span><input type="checkbox" class="sw" data-opt="ins" ${S.opts.ins?'checked':''}></label></div>
+   </div>
+   <div class="card pad stack sticky"><h2 style="font-size:1.2rem;font-weight:600">Price</h2>
+    <div class="between"><span>Fare × ${t.n}</span><span class="num">${R(t.fare)}</span></div>
+    <div class="between"><span>Booking fee <span class="small muted">(same for any payment)</span></span><span class="num">${R(FEE)}</span></div>
+    ${t.ins?`<div class="between"><span>Insurance</span><span class="num">${R(t.ins)}</span></div>`:''}
+    <div class="between" style="border-top:1px solid var(--line);padding-top:14px"><b>Total</b><b class="num" style="font-size:1.6rem">${R(t.sum)}</b></div>
+    <details><summary class="small" style="cursor:pointer;color:var(--primary-text);font-weight:600">If you cancel</summary><p class="small muted" style="margin-top:8px">48+ hours before: ${R(t.fare-keep*t.n)} back · 12–48 hours: ${R(t.fare*.75)} · 4–12 hours: ${R(t.fare*.5)}${wl?' · Still waitlisted at chart: full refund, automatic':''}</p></details>
+    <button class="btn btn-cta btn-block" data-pay>Pay ${R(t.sum)} with UPI</button>
+    <p class="tiny muted">If money is deducted and no ticket is issued, it comes back automatically within an hour.</p>
+   </div></div>`;
+}
+function qr(seed){let s=seed,r=()=>(s=(s*16807)%2147483647)/2147483647;let c='';const f=(x,y)=>`<rect x="${x}" y="${y}" width="7" height="7" fill="#121A33"/><rect x="${x+1}" y="${y+1}" width="5" height="5" fill="#fff"/><rect x="${x+2}" y="${y+2}" width="3" height="3" fill="#121A33"/>`;
+  for(let y=0;y<25;y++)for(let x=0;x<25;x++){if((x<8&&y<8)||(x>16&&y<8)||(x<8&&y>16))continue;if(r()>.52)c+=`<rect x="${x}" y="${y}" width="1" height="1" fill="#121A33"/>`}
+  return `<svg class="qr" viewBox="0 0 25 25" role="img" aria-label="Boarding QR code"><rect width="25" height="25" fill="#fff"/>${c}${f(0,0)}${f(18,0)}${f(0,18)}</svg>`}
+function vTicket(){
+  const b=S.lastBooking,wl=b.kind==='wl';
+  return `${band(wl?'You’re on the list, Priya':'Booked. Have a good trip, Priya',wl?`${b.p}% chance to confirm · we’ll message you as it moves`:'Ticket sent by SMS and WhatsApp')}
+  <div class="wrap"><div class="card ticket">
+   <div class="pad"><div class="between"><span class="lbl">PNR</span><span class="pill p-${wl?tone(b.p):'ok'}">${b.st}</span></div><p class="pnr">452 188 3902</p>
+    <p style="margin-top:8px;font-size:1.1rem"><b>${b.name}</b> <span class="muted">(${b.no})</span></p>
+    <div class="tm-row"><div class="tm"><b>${b.dep}</b><span>${b.depSt} · ${b.depD}</span></div><div class="dur">${b.dur}<div class="ln"><b></b><i></i><b></b></div>${b.cls}</div><div class="tm r"><b>${b.arr}</b><span>${b.arrSt} · ${b.arrD}</span></div></div></div>
+   <div class="stub pad"><div class="stack" style="gap:8px">${b.pax.map(p=>`<div><b>${p.n}</b><br><span class="small muted">${p.b}</span></div>`).join('')}</div>
+    ${wl?`<p class="small muted" style="max-width:170px">Your boarding QR appears here once the ticket confirms.</p>`:qr(98317)}</div>
+   <div class="pad row" style="border-top:1px solid var(--line)"><button class="btn btn-primary btn-sm" data-nav="live">Where’s my train?</button><button class="btn btn-ghost btn-sm" data-soon>Add to calendar</button><button class="btn btn-ghost btn-sm" data-soon>Download</button><button class="btn btn-ghost btn-sm" data-soon>Order meals</button></div>
+  </div></div>`;
+}
+function cd(){let s=Math.max(0,Math.floor((TK.win-new Date())/1000));return [Math.floor(s/3600),Math.floor(s%3600/60),s%60].map(v=>String(v).padStart(2,'0')).join(':')}
+function vTrips(){
+  return `${band('My trips','Bookings, waitlists, Tatkal and refunds in one place')}
+  <div class="wrap cols lift">
+   <div class="stack">
+    ${!S.auth?`<div class="card pad stack"><b style="font-size:1.15rem">Sign in to see your trips</b><p class="muted">Or check any PNR on the right without signing in.</p><button class="btn btn-primary" data-signin="dialog" style="align-self:flex-start">Sign in</button></div>`:''}
+    ${S.tk?tatkalCard():''}
+    ${S.auth?S.trips.map(tripCard).join(''):''}
+   </div>
+   <div class="stack sticky">
+    <form class="card pad stack" id="pnrForm"><b>Check a PNR</b><div class="field"><label for="pnr">PNR number</label><input id="pnr" inputmode="numeric" value="482 551 9037"></div><button class="btn btn-ghost">Check status</button><div id="pnrOut"></div></form>
+    <div class="card pad stack" style="gap:8px"><b>Refunds</b><p class="small muted">Nothing pending. Failed payments are reversed within an hour, with a message at each step.</p></div>
+   </div></div>`;
+}
+function tripCard(t){
+  const wl=t.kind==='wl';
+  return `<div class="card pad stack" style="gap:12px"><div class="between"><b style="font-size:1.1rem">${t.name} <span class="muted" style="font-weight:400">${t.no}</span></b><span class="pill p-${wl?tone(t.p):'ok'}">${t.st}</span></div>
+   <p class="muted">${t.route} · ${t.date} · ${t.cls}</p>
+   ${wl?`<div><div class="between small"><span>Chance to confirm by chart time</span><b class="t-${tone(t.p)}">${t.p}%</b></div><div class="meter" style="margin-top:6px" role="img" aria-label="${t.p} percent"><i class="bg-${tone(t.p)}" style="width:${t.p}%"></i></div></div>
+   <ul class="log small">${(t.hist||[]).map(([a,b])=>`<li><span class="t">${a}</span><span>${b}</span></li>`).join('')}</ul>
+   <label class="swrow"><span class="small">Switch me to a confirmed seat if this won’t clear<br><span class="muted">We ask before paying any difference</span></span><input type="checkbox" class="sw" checked></label>`:''}
+   <button class="link small" data-nav="live" style="align-self:flex-start">Where’s my train? →</button></div>`;
+}
+function tatkalCard(){
+  const tk=S.tk;
+  return `<div class="card pad stack" style="gap:12px;box-shadow:0 0 0 2px var(--primary),var(--shadow)"><div class="between"><b style="font-size:1.1rem">Tatkal auto-book</b><span class="pill ${tk.state==='booked'?'p-ok':tk.state==='failed'?'p-warn':'p-info'}">${tk.state==='booked'?'Booked':tk.state==='failed'?'No seat · ₹0 charged':tk.state==='running'?'Booking now':'Scheduled'}</span></div>
+   <p>${tk.first.name} · ${CLS[tk.cls][0]}${tk.backup?`<br><span class="muted small">Backup: ${tk.backup.name}</span>`:''}</p>
+   <p class="small muted">${fd(TK.travel)} · ${tk.n} traveller${tk.n>1?'s':''} · charged only if booked, up to ${R(tk.max)}</p>
+   ${tk.state==='scheduled'?`<div class="between" style="background:var(--sunk);border-radius:16px;padding:12px 16px"><span>Window opens in</span><b class="num" id="cd" style="font-size:1.6rem">${cd()}</b></div><div class="row"><button class="btn btn-primary btn-sm" data-tkrun="ok">Preview 10:00 (demo)</button><button class="btn btn-ghost btn-sm" data-tkrun="fail">Preview: no seat</button></div>`:''}
+   ${tk.log.length?`<ul class="log small" aria-live="polite">${tk.log.map(([a,b])=>`<li><span class="t">${a}</span><span>${b}</span></li>`).join('')}</ul>`:''}
+   ${tk.state==='failed'?`<div class="infoline">${I.info}<span>Still a way to Patna: <b>Vande Bharat Sleeper + Sampark Kranti</b>, confirmed 3A seats with a change at Nagpur.</span></div><button class="btn btn-primary btn-sm" data-open="ngp" data-forcegn style="align-self:flex-start">See this option</button>`:''}</div>`;
+}
+function mapSVG(){
+  const st=LIVE.stations,W=640,H=520;
+  const pts=st.map((_,i)=>{const t=i/(st.length-1);return[150+Math.sin(t*3.2)*120+t*170,50+t*420]});
+  const P=a=>a.map((p,i)=>(i?'L':'M')+p[0].toFixed(1)+' '+p[1].toFixed(1)).join(' ');
+  const a=pts[LIVE.now-1],b=pts[LIVE.now],f=S.liveF||.55,tx=a[0]+(b[0]-a[0])*f,ty=a[1]+(b[1]-a[1])*f;
+  return `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Map: ${LIVE.name} is between ${st[LIVE.now-1][0]} and ${st[LIVE.now][0]}">
+   <g fill="none" stroke="var(--line-2)" stroke-width="1" opacity=".6"><path d="M0 90 C 180 130 380 40 640 110"/><path d="M0 260 C 200 220 420 320 640 250"/><path d="M0 420 C 220 380 400 470 640 400"/><path d="M120 0 C 160 180 90 330 150 520"/><path d="M500 0 C 470 160 560 320 500 520"/></g>
+   <path d="M-10 330 C 140 300 230 370 360 330 S 560 270 660 300" fill="none" stroke="#8fb6ff" stroke-width="8" opacity=".35"/>
+   <path d="${P(pts)}" fill="none" stroke="var(--line-2)" stroke-width="6" stroke-linecap="round" stroke-dasharray="1 10"/>
+   <path d="${P(pts.slice(0,LIVE.now))} L${tx} ${ty}" fill="none" stroke="var(--primary)" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+   ${pts.map((p,i)=>`<circle cx="${p[0]}" cy="${p[1]}" r="${i===0||i===st.length-1?7:5}" fill="${i<LIVE.now?'var(--primary)':'var(--surface)'}" stroke="var(--primary)" stroke-width="2.5"/><text x="${p[0]+14}" y="${p[1]+5}" font-size="14" fill="var(--muted)" font-family="inherit" font-weight="${i===LIVE.now?600:400}">${st[i][0]}</text>`).join('')}
+   <circle class="pulse" cx="${tx}" cy="${ty}" r="12" fill="var(--primary)" opacity=".5"/>
+   <g transform="translate(${tx-17} ${ty-17})"><circle cx="17" cy="17" r="17" fill="var(--primary)" stroke="#fff" stroke-width="2"/><path d="M10 10h14v10H10zM12 23l-2 3M22 23l2 3M10 16h14" fill="none" stroke="#fff" stroke-width="1.8" stroke-linejoin="round"/></g>
+  </svg>`;
+}
+function vLive(){
+  const st=LIVE.stations,next=st[LIVE.now];
+  return `${band('Where’s my train?','Live location, delays, platforms and coach position')}
+  <div class="wrap cols lift">
+   <div class="stack">
+    <form class="card pad row" id="liveSearch" style="padding:12px 14px"><label class="sr-only" for="liveNo">Train number, name or PNR</label><input id="liveNo" class="select" style="flex:1;border-radius:999px" value="${LIVE.no} · ${LIVE.name}"><button class="btn btn-primary btn-sm">Track</button></form>
+    <div class="map" id="map">${mapSVG()}<div class="mtop"><span class="pill p-ok" style="background:var(--surface);box-shadow:var(--shadow);padding:8px 14px"><span style="width:8px;height:8px;border-radius:50%;background:var(--ok);display:inline-block"></span> Live · updated just now</span></div></div>
+   </div>
+   <div class="stack sticky">
+    <div class="card pad stack" style="gap:12px">
+     <div class="between"><div><b style="font-size:1.25rem">${LIVE.name}</b> <span class="muted">${LIVE.no}</span><p class="small muted">${LIVE.from} → ${LIVE.to} · today</p></div><span class="pill p-warn">${LIVE.late} min late</span></div>
+     <div class="between" style="background:var(--sunk);border-radius:18px;padding:14px 16px"><div><p class="lbl">Next stop</p><b style="font-size:1.2rem">${next[0]}</b></div><div style="text-align:right"><p class="lbl">Arrives</p><b class="num" style="font-size:1.2rem">${next[2]}</b> <span class="small muted" style="text-decoration:line-through">${next[1]}</span></div></div>
+     <p class="small muted">Platform ${LIVE.pf} · Coach B3 stops near the front of the platform</p>
+     <div class="row"><button class="btn btn-ghost btn-sm" data-soon>Share live location</button><button class="btn btn-ghost btn-sm" data-soon>Alert me 30 min before</button></div>
+    </div>
+    <div class="card pad"><ol class="stations">${st.map((s,i)=>`<li class="${i<LIVE.now?'past':i===LIVE.now?'now':''}"><span class="dot" aria-hidden="true"></span><span><b style="font-weight:${i===LIVE.now?600:500}">${s[0]}</b>${i===LIVE.now?'<br><span class="small t-warn">Next stop</span>':''}</span><span class="small muted num" style="text-decoration:${s[1]!==s[2]?'line-through':'none'}">${s[1]}</span><span class="small num">${s[2]}</span></li>`).join('')}</ol></div>
+   </div></div>`;
+}
+function vProfile(){
+  return `${band(S.auth?'Priya Kumari':'Your account',S.auth?'Verified with DigiLocker · Face ID on':'Sign in to book and see your trips')}
+  <div class="wrap cols lift">
+   <div class="stack">${a11yPanel()}</div>
+   <div class="stack sticky">
+    ${S.auth?`<div class="card pad stack" style="gap:10px"><div class="between"><b>Saved travellers</b><button class="link small" data-addpax>Add</button></div>${PEOPLE.map(p=>`<div class="row"><span class="av" style="width:40px;height:40px">${initials(p.name)}</span><span>${p.name}<br><span class="small muted">${p.rel} · ${p.age}</span></span></div>`).join('')}</div><button class="btn btn-ghost" data-signout>Sign out</button>`
+    :`<div class="card pad stack"><p class="muted">One tap with Face ID, or verify once with DigiLocker.</p><button class="btn btn-primary" data-signin="dialog">Sign in</button></div>`}
+   </div></div>`;
+}
+function a11yPanel(){
+  const sw=(k,l,d)=>`<label class="swrow"><span>${l}<br><span class="small muted">${d}</span></span><input type="checkbox" class="sw" data-a="${k}" ${A[k]?'checked':''}></label>`;
+  return `<div class="card pad stack" id="a11yCard" style="gap:16px"><h2 style="font-size:1.3rem;font-weight:600">Accessibility</h2>
+   <div><p class="lbl" style="margin-bottom:8px">Text size</p><div class="chips" role="group" aria-label="Text size">${['A−','A','A+','A++'].map((l,i)=>`<button class="chip" data-asize="${i}" aria-pressed="${A.size===i}" aria-label="${['Small','Default','Large','Extra large'][i]} text">${l}</button>`).join('')}</div></div>
+   <div><p class="lbl" style="margin-bottom:8px">Colours</p><div class="chips" role="group" aria-label="Colour theme">${[['auto','Device'],['light','Light'],['dark','Dark'],['hc','High contrast']].map(([k,l])=>`<button class="chip" data-atheme="${k}" aria-pressed="${A.theme===k}">${l}</button>`).join('')}</div></div>
+   <div>${sw('focus','Focus mode','One task at a time: hides suggestions, bigger buttons, no motion')}${sw('readable','Easy-to-read font','Atkinson Hyperlegible, designed for low vision')}${sw('spacing','More spacing','Between lines and letters')}${sw('calm','Reduce motion','Turns off animations')}${sw('speak','Assistant reads replies aloud','Uses your device’s voice')}</div>
+   <div><p class="lbl" style="margin-bottom:8px">Language</p><div class="chips">${['English','हिंदी','தமிழ்','বাংলা','मराठी','മലയാളം'].map((l,i)=>`<button class="chip" data-alang="${i}" aria-pressed="${(A.lang||0)===i}">${l}</button>`).join('')}</div></div>
+   <p class="small muted">Always on: works with keyboard alone, skip link, visible focus, labels on every field, screen-reader announcements, status shown in words and icons as well as colour, and no CAPTCHA.</p>
+   <button class="link small" data-areset style="align-self:flex-start">Reset to default</button></div>`;
+}
+
+/* =========================================================
+   Dialogs & overlays
+   ========================================================= */
+let opener=null,voiceRec=null;
+function dialog(html,label,side){
+  opener=document.activeElement;
+  $('#layer').innerHTML=`<div class="scrim ${side?'right':''}" id="scrim"><div class="${side==='voice'?'voice':side?'drawer':'dialog'}" role="dialog" aria-modal="true" aria-label="${label}">${html}</div></div>`;
+  const box=$('#scrim>div');(box.querySelector('[data-autofocus]')||box.querySelector('button,input,select')).focus();
+  $('#scrim').addEventListener('click',e=>{if(e.target.id==='scrim')closeLayer()});
+  box.addEventListener('keydown',e=>{if(e.key!=='Tab')return;const f=[...box.querySelectorAll('button,input,select,summary')].filter(x=>!x.disabled&&x.offsetParent);const a=f[0],z=f[f.length-1];if(e.shiftKey&&document.activeElement===a){e.preventDefault();z.focus()}else if(!e.shiftKey&&document.activeElement===z){e.preventDefault();a.focus()}});
+}
+function closeLayer(){$('#layer').innerHTML='';if(voiceRec){try{voiceRec.stop()}catch(e){}voiceRec=null}if(opener&&document.body.contains(opener))opener.focus()}
+const head=(t,sub)=>`<div class="between"><h2>${t}</h2><button class="xbtn" data-close aria-label="Close">${I.x}</button></div>${sub?`<p class="muted">${sub}</p>`:''}`;
+function signinDialog(next){
+  if(next)S.afterSignin=next;
+  dialog(`${head('Sign in','One tap if you’ve used this device before. No passwords or CAPTCHA.')}
+   <button class="btn btn-primary btn-block" data-signin="face" data-autofocus><span style="width:24px;height:24px;display:inline-grid">${I.face}</span>Continue with Face ID or passkey</button>
+   <button class="btn btn-ghost btn-block" data-signin="new">New here? Verify with DigiLocker</button>
+   <button class="btn btn-ghost btn-block" data-signin="otp">Use mobile OTP instead</button>
+   <p class="small muted">Browsing, live seats, PNR and train tracking work without signing in. You only sign in to book.</p>`,'Sign in');
+}
+function newUserDialog(step){
+  if(step===1)dialog(`${head('Create your account')}<p class="lbl">Step 1 of 2</p><h3 style="font-size:1.25rem">Share your details from DigiLocker</h3><p class="muted">Your profile is filled from Aadhaar. Nothing to type.</p>
+   <div class="card pad stack small" style="gap:6px;box-shadow:none"><span>✓ Name, age and gender</span><span>✓ Photo, for ID checks on board</span><span>✓ Mobile number</span><span class="muted">Not shared: Aadhaar number, address</span></div>
+   <button class="btn btn-primary btn-block" data-newstep="2">Allow and continue</button>`,'Create account');
+  else dialog(`${head('Create your account')}<p class="lbl">Step 2 of 2</p><h3 style="font-size:1.25rem">Turn on Face ID or a passkey</h3><p class="muted">Next time, sign in and approve payments with a glance.</p>
+   <button class="btn btn-primary btn-block" data-signin="face">Turn it on</button><button class="link" data-signin="skip" style="align-self:center">Skip for now</button>`,'Create account');
+}
+function faceID(msg,then){
+  $('#layer').innerHTML=`<div class="faceid" role="dialog" aria-modal="true" aria-label="Face ID"><div>${I.face}<b>Face ID</b><span class="small muted">${msg}</span></div></div>`;announce(msg);
+  setTimeout(()=>{$('#layer .faceid div').innerHTML=`<span style="font-size:2.6rem;color:var(--ok)">✓</span><b>Done</b>`;setTimeout(()=>{$('#layer').innerHTML='';then()},500)},900);
+}
+function quotaDialog(){dialog(`${head('Booking type')}${Object.keys(QUOTA).map(k=>`<button class="opt" role="radio" data-setquota="${k}" aria-checked="${S.quota===k}"><span class="rd" aria-hidden="true"></span><span><b>${QUOTA[k]}</b><br><span class="small muted">${QHELP[k]}</span></span><span></span></button>`).join('')}`,'Booking type')}
+function guestPaxDialog(){dialog(`${head('How many travellers?','You’ll add names when you book.')}<div class="between"><span style="font-size:1.2rem">Travellers</span><div class="row"><button class="xbtn" data-gcount="-1" aria-label="Fewer">−</button><b class="num" style="font-size:1.4rem;min-width:30px;text-align:center" id="gc">${S.guestCount}</b><button class="xbtn" data-gcount="1" aria-label="More">+</button></div></div><button class="btn btn-primary btn-block" data-close>Done</button>`,'Travellers')}
+function addPaxDialog(){
+  dialog(`${head('Add a traveller')}<form id="addPax" class="stack">
+   <div class="field"><label for="apName">Full name (as on ID)</label><input id="apName" required autocomplete="off"></div>
+   <div class="row" style="flex-wrap:nowrap"><div class="field" style="flex:1"><label for="apAge">Age</label><input id="apAge" type="number" min="1" max="120" required inputmode="numeric"></div>
+   <div class="field" style="flex:1"><label for="apG">Gender</label><select id="apG"><option value="F">Female</option><option value="M">Male</option><option value="O">Other</option></select></div></div>
+   <div class="field"><label for="apRel">Relation</label><select id="apRel"><option>Family</option><option>Friend</option><option>Colleague</option></select></div>
+   <p class="small muted">They’ll get a DigiLocker request to verify their ID.</p><button class="btn btn-primary btn-block">Save traveller</button></form>`,'Add a traveller');
+}
+function tatkalDrawer(){
+  const x=TRAINS.find(t=>t.id===S.sel),c=S.selCls,s=stat(x,c),n=S.pax.length;
+  const bk=TRAINS.filter(t=>t.id!==x.id&&!t.conn&&t.tq&&t.tq[c]).sort((a,b)=>b.tq[c].p-a.tq[c].p)[0];
+  const useB=S.tkBackup!==false&&!!bk;const p1=s.p,p2=bk?bk.tq[c].p:0,comb=useB?Math.round((1-(1-p1/100)*(1-p2/100))*100):p1;
+  const maxFare=Math.max(s.fare,useB?stat(bk,c).fare:0)*n;const max=S.tkMax||Math.ceil((maxFare+FEE)/500)*500;
+  dialog(`${head('Auto-book Tatkal',`Opens ${fd(TK.win)} at 10:00 AM. You don’t need to be online. We’ll message you the result.`)}
+   <div class="card pad" style="box-shadow:none;padding:16px 18px"><div class="between"><span><b>${x.name}</b><br><span class="small muted">${CLS[c][0]} · ${R(s.fare)} each</span></span><span class="pill p-${tone(p1)}">${p1}% chance</span></div></div>
+   ${bk?`<label class="swrow"><span><b>If it’s full, try ${bk.name}</b><br><span class="small muted">${CLS[c][0]} · ${R(stat(bk,c).fare)} each · ${p2}% chance</span></span><input type="checkbox" class="sw" id="tkB" ${useB?'checked':''}></label>`:''}
+   <div class="between" style="background:var(--primary-soft);border-radius:18px;padding:16px 18px"><span>Your chance of a seat</span><b style="font-size:1.8rem" class="t-${tone(comb)}">${comb}%</b></div>
+   <div class="between"><span><b>${n} traveller${n>1?'s':''}</b><br><span class="small muted">${S.pax.map(id=>person(id).name.split(' ')[0]).join(', ')} · ID verified</span></span><button class="link small" data-go="travellers" data-mode="tatkal">Change</button></div>
+   <div class="field"><label for="tkMax">Most you’ll pay in total</label><input id="tkMax" type="number" inputmode="numeric" value="${max}" step="100"></div>
+   <p class="small muted">Charged only if a seat is confirmed, never more than this. Every verified request gets a fair place in the queue, so speed and bots don’t matter. Tatkal tickets can’t be refunded once confirmed.</p>
+   <button class="btn btn-cta btn-block" data-tkschedule>Schedule and approve with Face ID</button>`,'Auto-book Tatkal',true);
+  S._tk={x,c,bk:useB?bk:null,n};
+}
+const VSAMPLES=['Tatkal to Patna tomorrow for me and dad in 3AC','Where is my train right now?','Cheapest sleeper to Patna on Monday','Book lower berths for my parents to Patna','What’s my PNR status?'];
+function openVoice(){
+  dialog(`<div class="between"><b style="font-size:1.2rem">Ask IRCTC</b><button class="xbtn" data-close aria-label="Close assistant">${I.x}</button></div>
+   <div class="orb" id="orb" aria-hidden="true"></div><p class="status" id="vstatus">Listening… English, Hindi or Hinglish</p>
+   <p class="said" id="vsaid" aria-live="polite"></p><div id="vreply"></div>
+   <div class="sugg" id="vsugg"><p class="small" style="opacity:.8">Try saying</p>${VSAMPLES.map(t=>`<button data-vsay="${t}">“${t}”</button>`).join('')}</div>
+   <form id="vform"><label class="sr-only" for="vtext">Type instead</label><input id="vtext" placeholder="Or type your question"><button class="mic" aria-label="Send">➤</button></form>`,'Assistant','voice');
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  const idle=m=>{$('#vstatus').textContent=m;$('#orb').classList.add('idle')};
+  if(SR){try{voiceRec=new SR();voiceRec.lang='en-IN';voiceRec.interimResults=true;
+    voiceRec.onresult=e=>{const r=[...e.results].map(x=>x[0].transcript).join(' ');$('#vsaid').textContent=r;if(e.results[e.results.length-1].isFinal)handleSpeech(r)};
+    voiceRec.onerror=()=>idle('Microphone not available here. Tap a phrase or type.');voiceRec.onend=()=>{$('#orb')&&$('#orb').classList.add('idle')};voiceRec.start()}catch(e){idle('Tap a phrase or type to try the assistant.')}}
+  else idle('Tap a phrase or type to try the assistant.');
+}
+function typeOut(text,done){const el=$('#vsaid');el.textContent='';let i=0;$('#orb').classList.remove('idle');const iv=setInterval(()=>{el.textContent=text.slice(0,++i);if(i>=text.length){clearInterval(iv);done()}},26)}
+function parseTrip(low){
+  const out={};const found=[];Object.keys(ALIAS).forEach(k=>{const i=low.indexOf(k);if(i>=0&&!found.some(f=>f.c===ALIAS[k]))found.push({i,c:ALIAS[k]})});found.sort((a,b)=>a.i-b.i);
+  if(found.length>=2){out.from=found[0].c;out.to=found[1].c}else if(found.length===1)out.to=found[0].c;
+  if(/tatkal/.test(low))out.quota='TQ';else if(/lower berth|senior|parents/.test(low))out.quota='SS';else if(/ladies|women/.test(low))out.quota='LD';
+  if(/sleeper|\bsl\b/.test(low))out.cls='SL';else if(/3ac|3 ac|3a\b|third ac/.test(low))out.cls='3A';else if(/2ac|2 ac|2a\b/.test(low))out.cls='2A';
+  let pax=['me'];if(/dad|father|papa/.test(low))pax.push('dad');if(/mom|mother|maa/.test(low))pax.push('mom');if(/parents/.test(low))pax=['mom','dad'];if(/friend|arjun/.test(low))pax.push('arj');out.pax=pax;
+  DAYS.forEach((d,i)=>{const w=d.toLocaleDateString('en-IN',{weekday:'long'}).toLowerCase();if(low.includes(w))out.date=i});if(/tomorrow|kal/.test(low))out.date=0;
+  if(/cheap|sasta/.test(low))out.sort='cheap';
+  return out;
+}
+function handleSpeech(text){
+  const low=' '+text.toLowerCase()+' ';const sg=$('#vsugg');if(sg)sg.hidden=true;$('#orb').classList.add('idle');$('#vstatus').textContent='';
+  let html,speak;
+  if(/where|location|running|live|late/.test(low)){speak=`${LIVE.name} is between ${LIVE.stations[LIVE.now-1][0]} and ${LIVE.stations[LIVE.now][0]}, running ${LIVE.late} minutes late. It reaches ${LIVE.stations[LIVE.now][0]} at ${LIVE.stations[LIVE.now][2]}.`;html=`<p>${speak}</p><button class="btn btn-primary btn-block" data-vgo="live">Open live map</button>`}
+  else if(/pnr|status|waitlist/.test(low)){const t=S.trips[0];speak=`${t.name} on ${t.date} is at ${t.st}, with a ${t.p} percent chance to confirm.`;html=`<p>${speak}</p><button class="btn btn-primary btn-block" data-vgo="trips">See my trip</button>`}
+  else{
+    const p=parseTrip(low);if(p.from)S.from=p.from;if(p.to)S.to=p.to;const sample=S.from==='Bengaluru'&&S.to==='Patna';if(!sample){S.from='Bengaluru';S.to='Patna'}
+    S.auth=true;S.pax=p.pax;S.quota=p.quota||'GN';if(p.cls)S.cls=p.cls;if(p.sort)S.sort=p.sort;S.date=S.quota==='TQ'?TK.idx:(p.date!=null?p.date:S.date);S.rtab='all';
+    const v=visible(),top=v.list[0],s=top&&stat(top,S.cls);const who=S.pax.map(id=>id==='me'?'you':person(id).rel.toLowerCase()).join(' and ');
+    if(S.quota==='TQ'&&top){speak=`Tatkal for ${fd(TK.travel)} opens at 10 AM. ${top.name} in ${CLS[S.cls][0]} has the best chance, ${s.p} percent. I can auto-book it for ${who}, with a backup.`;html=`<p>${speak}</p><div class="row"><button class="btn btn-primary btn-sm" data-vgo="tatkal:${top.id}">Set up auto-book</button><button class="btn btn-ghost btn-sm" data-vgo="results">See all trains</button></div>`}
+    else if(top){speak=`I found ${v.list.length} options in ${CLS[S.cls][0]} for ${fd(DAYS[S.date])}${v.counts.conn&&S.quota==='GN'?`, including ${v.counts.conn} with one change`:''}. Best for ${who}: ${top.name}, ${s.label.toLowerCase()}, ${R(s.fare)} each.`;html=`<p>${speak}</p>${S.quota==='SS'?'<p class="small muted">Using the lower-berth quota, since both your parents qualify.</p>':''}<div class="row"><button class="btn btn-primary btn-sm" data-vgo="results">Show trains</button><button class="btn btn-ghost btn-sm" data-vgo="detail:${top.id}">Open best option</button></div>`}
+    else{speak='I couldn’t find seats for that. Try another class or date.';html=`<p>${speak}</p><button class="btn btn-primary btn-block" data-vgo="results">Show trains</button>`}
+    if(!sample)html=`<p class="small muted">Sample data covers Bengaluru → Patna, so I used that route.</p>`+html;
+  }
+  $('#vreply').innerHTML=`<div class="reply" role="status">${html}</div>`;
+  if(A.speak&&window.speechSynthesis){try{const u=new SpeechSynthesisUtterance(speak);u.lang='en-IN';speechSynthesis.speak(u)}catch(e){}}
+}
+function tourPop(open){
+  const b=$('#tourbtn');b.setAttribute('aria-expanded',open);const old=$('#tourpop');if(old)old.remove();if(!open)return;
+  const items=[['welcome','Guest visit, then sign in'],['connecting','Search and connecting trains'],['waitlist','Book on waitlist with a chance'],['senior','Lower-berth quota for parents'],['tatkal','Tatkal auto-book'],['live','Where’s my train'],['voice','Talk to the assistant'],['a11y','Accessibility settings']];
+  const d=document.createElement('div');d.className='card tourpop';d.id='tourpop';d.setAttribute('role','menu');
+  d.innerHTML=`<p class="lbl" style="padding:4px 10px">Jump to a flow</p>`+items.map(([k,l],i)=>`<button role="menuitem" data-tour="${k}"><span class="n">${i+1}</span>${l}</button>`).join('');
+  document.body.appendChild(d);d.querySelector('button').focus();
+}
+
+/* =========================================================
+   Render & navigation
+   ========================================================= */
+let liveTimer=null,cdTimer=null;
+function render(focus){
+  const map={home:vHome,results:vResults,detail:vDetail,travellers:vTravellers,review:vReview,ticket:vTicket,trips:vTrips,live:vLive,profile:vProfile};
+  $('#main').innerHTML=map[S.view]();header();$('#fab').hidden=S.view==='home';
+  if(focus){window.scrollTo(0,0);const h=$('#h1');(h||$('#main')).focus({preventScroll:true})}
+  clearInterval(liveTimer);clearInterval(cdTimer);
+  if(S.view==='live'&&!A.calm&&!A.focus)liveTimer=setInterval(()=>{S.liveF=Math.min(.95,(S.liveF||.55)+.01);const m=$('#map');if(m){const t=m.querySelector('.mtop').outerHTML;m.innerHTML=mapSVG()+t}},1500);
+  if(S.tk&&S.tk.state==='scheduled')cdTimer=setInterval(()=>{const e=$('#cd');if(e)e.textContent=cd()},1000);
+}
+const TOP=['home','trips','live','profile'];
+function go(v,focus=true){if(TOP.includes(v))S.stack=[];else if(S.view!==v)S.stack.push(S.view);S.view=v;render(focus);
+  announce({home:'Book tickets',results:`Trains from ${S.from} to ${S.to}`,detail:'Train details',travellers:'Choose travellers',review:'Review and pay',ticket:'Booking confirmed',trips:'My trips',live:'Where’s my train',profile:'Your account'}[v])}
+function back(){S.view=S.stack.pop()||'home';render(true)}
+function requireAuth(next){if(S.auth)return next();signinDialog(next)}
+function finishSignin(){S.auth=true;closeLayer();toast('Signed in as Priya');const n=S.afterSignin;S.afterSignin=null;if(n)n();else render(false)}
+function book(){
+  const t=totals(),x=t.x,s=t.s;
+  S.lastBooking={kind:s.kind,name:x.name,no:x.no,dep:x.dep[0],depSt:x.dep[1],depD:dd(S.date,x.dep[3]),arr:x.arr[0],arrSt:x.arr[1],arrD:dd(S.date,x.arr[3]),dur:durLong(x.mins),cls:CLS[S.selCls][0],st:s.kind==='wl'?`Waitlist ${s.n}`:'Confirmed',p:s.p,
+    pax:S.pax.map((id,i)=>{const p=person(id);const pref=S.quota==='SS'?'Lower':S.berth[id]||(eligSS(p)?'Lower':'');return{n:p.name,b:s.kind==='wl'?`Waitlist ${s.n+i}`:`Coach B3 · Berth ${33+i} · ${pref&&pref!=='No preference'?pref:['Lower','Middle','Upper'][i%3]}`}})};
+  S.trips.unshift({kind:s.kind==='wl'?'wl':'cnf',name:x.name,no:x.no,route:`${S.from} → ${S.to}`,date:fd(DAYS[S.date]),cls:S.selCls,st:S.lastBooking.st,p:s.p,hist:s.kind==='wl'?[['Today',`Booked at Waitlist ${s.n}`]]:[]});
+  S.stack=[];S.view='ticket';render(true);announce('Booking confirmed');
+}
+function runTatkal(mode){
+  const tk=S.tk;tk.state='running';tk.log=[];render(false);
+  const steps=[['09:55','ID and payment approval ready'],['09:59','In the fair queue · verified travellers only'],['10:00:00','Window open · requesting seats']];
+  if(mode==='ok'){if(tk.backup){steps.push(['10:00:02',`${tk.first.name} is full. Trying backup.`]);steps.push(['10:00:04',`✓ ${tk.backup.name} · ${CLS[tk.cls][0]} confirmed`])}else steps.push(['10:00:03',`✓ ${tk.first.name} · ${CLS[tk.cls][0]} confirmed`]);steps.push(['10:00:05','Paid by UPI Autopay · ticket sent'])}
+  else{steps.push(['10:00:02',`${tk.first.name} is full`]);if(tk.backup)steps.push(['10:00:04',`${tk.backup.name} is full`]);steps.push(['10:00:05','No seat this time · ₹0 charged'])}
+  steps.forEach((s,i)=>setTimeout(()=>{tk.log.push(s);if(i===steps.length-1){tk.state=mode==='ok'?'booked':'failed';if(mode==='ok'){const w=tk.backup||tk.first;S.trips.unshift({kind:'cnf',name:w.name,no:w.no,route:'Bengaluru → Patna',date:fd(TK.travel),cls:tk.cls,st:'Confirmed · Tatkal',p:99})}}if(S.view==='trips')render(false);announce(s[1])},350+i*700));
+}
+
+/* accessibility */
+const A=Object.assign({size:1,theme:'auto',readable:false,spacing:false,calm:false,focus:false,speak:false,lang:0},(()=>{try{return JSON.parse(localStorage.getItem('irctc-a11y'))||{}}catch(e){return{}}})());
+function applyA(){const r=document.documentElement;r.style.setProperty('--fs',[14,16,18,21][A.size]+'px');if(A.theme==='auto')r.removeAttribute('data-theme');else r.setAttribute('data-theme',A.theme);['readable','spacing','calm','focus'].forEach(k=>r.classList.toggle(k,!!A[k]));try{localStorage.setItem('irctc-a11y',JSON.stringify(A))}catch(e){}}
+function a11yDrawer(){dialog(`<div class="between"><h2>Make it easier to use</h2><button class="xbtn" data-close aria-label="Close">${I.x}</button></div>${a11yPanel()}`,'Accessibility',true)}
+function refreshA(sel){if($('#layer .drawer'))a11yDrawer();else render(false);const el=$(sel);el&&el.focus()}
+
+/* =========================================================
+   Events
+   ========================================================= */
+document.addEventListener('click',e=>{
+  const b=e.target.closest('button');if(!b)return;const d=b.dataset;
+  if(b.id!=='tourbtn'&&!b.closest('#tourpop'))tourPop(false);
+  if(b.id==='tourbtn'){tourPop(b.getAttribute('aria-expanded')!=='true');return}
+  if(d.tour){tourPop(false);tour(d.tour);return}
+  if(b.id==='fab'||'voice' in d){openVoice();return}
+  if(d.nav){closeLayer();go(d.nav);return}
+  if('a11y' in d){a11yDrawer();return}
+  if('lang' in d){A.lang=A.lang?0:1;applyA();toast(A.lang?'हिंदी चुनी गई · full translation in the real site':'English selected');return}
+  if('close' in d){closeLayer();if($('#gc'))render(false);return}
+  if('soon' in d){toast('Not part of this prototype');return}
+  if('back' in d){back();return}
+  if(d.signin){const k=d.signin;if(k==='dialog'){signinDialog();return}if(k==='new'){newUserDialog(1);return}if(k==='otp'){closeLayer();toast('OTP sent to +91 98••• ••210 (demo)');setTimeout(finishSignin,900);return}if(k==='skip'){finishSignin();return}faceID('Signing in as Priya',finishSignin);return}
+  if(d.newstep){newUserDialog(2);return}
+  if(d.gcount){S.guestCount=Math.max(1,Math.min(6,S.guestCount+ +d.gcount));$('#gc').textContent=S.guestCount;return}
+  if(d.quota){S.quota=d.quota;if(S.quota==='TQ')S.date=TK.idx;render(false);$(`[data-quota="${d.quota}"]`).focus();announce(QHELP[S.quota]);return}
+  if(d.quickquota){S.quota=d.quickquota;S.date=TK.idx;render(false);$('#searchForm').scrollIntoView({block:'center'});$(`[data-quota="TQ"]`).focus();return}
+  if(d.setquota){S.quota=d.setquota;if(S.quota==='TQ')S.date=TK.idx;closeLayer();render(false);return}
+  if('quotadlg' in d){quotaDialog();return}
+  if(d.go){if(d.mode)S.flowMode=d.mode;closeLayer();go(d.go);return}
+  if(d.date){S.date=+d.date;render(false);$(`[data-date="${d.date}"]`).focus();return}
+  if(d.rtab){S.rtab=d.rtab;render(false);$(`[data-rtab="${d.rtab}"]`).focus();return}
+  if(d.cls){S.cls=d.cls;render(false);$(`[data-cls="${d.cls}"]`).focus();return}
+  if(d.open){if('forcegn' in d){S.quota='GN';S.date=TK.idx;S.cls='3A'}S.sel=d.open;S.selCls=null;go('detail');return}
+  if(d.selcls){S.selCls=d.selcls;render(false);$(`[data-selcls="${d.selcls}"]`).focus();return}
+  if('book' in d){requireAuth(()=>{S.flowMode='book';go('travellers')});return}
+  if('tatkal' in d){requireAuth(()=>{S.tkBackup=true;S.tkMax=null;tatkalDrawer()});return}
+  if('tkschedule' in d){const m=+$('#tkMax').value||0,k=S._tk;closeLayer();faceID('Approving UPI Autopay up to '+R(m),()=>{S.tk={state:'scheduled',first:k.x,backup:k.bk,cls:k.c,n:k.n,max:m,log:[]};toast('Scheduled. We’ll message you at 10:00.');go('trips')});return}
+  if(d.tkrun){runTatkal(d.tkrun);return}
+  if(d.pax){togglePax(d.pax);return}
+  if('addpax' in d){addPaxDialog();return}
+  if('paxdone' in d){const m=S.flowMode;if(m==='tatkal'){back();setTimeout(tatkalDrawer,60);return}if(m==='pick'||m==='review'){back();return}go('review');return}
+  if('pay' in d){const t=totals();faceID('Paying '+R(t.sum)+' with UPI',book);return}
+  if('signout' in d){S.auth=false;S.tk=null;go('home');return}
+  if(d.asize){A.size=+d.asize;applyA();refreshA(`[data-asize="${d.asize}"]`);return}
+  if(d.atheme){A.theme=d.atheme;applyA();refreshA(`[data-atheme="${d.atheme}"]`);return}
+  if(d.alang){A.lang=+d.alang;applyA();refreshA(`[data-alang="${d.alang}"]`);if(A.lang)toast('Full translation is part of the real site');return}
+  if('areset' in d){Object.assign(A,{size:1,theme:'auto',readable:false,spacing:false,calm:false,focus:false,speak:false,lang:0});applyA();refreshA('[data-areset]');return}
+  if(d.vsay){const sg=$('#vsugg');if(sg)sg.hidden=true;if(voiceRec){try{voiceRec.stop()}catch(e){}}typeOut(d.vsay,()=>handleSpeech(d.vsay));return}
+  if(d.vgo){const [k,id]=d.vgo.split(':');closeLayer();
+    if(k==='live'||k==='trips'){go(k);return}
+    S.stack=['home'];if(k==='results'){S.view='results';render(true);return}
+    S.stack=['home','results'];S.sel=id;S.selCls=S.cls;S.view='detail';render(true);
+    if(k==='tatkal'){S.tkBackup=true;S.tkMax=null;setTimeout(tatkalDrawer,80)}return}
+  if(b.id==='swap'){[S.from,S.to]=[S.to,S.from];render(false);$('#swap').focus();return}
+  if(b.id==='paxPick'){if(S.auth){S.flowMode='pick';go('travellers')}else guestPaxDialog();return}
+});
+function togglePax(id){const p=person(id),q=S.quota;if((q==='SS'&&!eligSS(p))||(q==='LD'&&!eligLD(p))){announce(`${p.name} doesn’t qualify for this booking type`);toast(`${p.name.split(' ')[0]} doesn’t qualify for ${QSHORT[q]}`);return}
+  S.pax=S.pax.includes(id)?S.pax.filter(x=>x!==id):[...S.pax,id];render(false);const el=$(`[data-pax="${id}"]`);el&&el.focus()}
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){if($('#layer').innerHTML)closeLayer();tourPop(false)}});
+document.addEventListener('change',e=>{
+  const el=e.target;
+  if(el.dataset.a){A[el.dataset.a]=el.checked;applyA();if(el.dataset.a==='focus'||el.dataset.a==='calm')refreshA(`[data-a="${el.dataset.a}"]`);return}
+  if(el.dataset.opt){S.opts[el.dataset.opt]=el.checked;if(el.dataset.opt==='ins'){render(false);$('[data-opt="ins"]').focus()}return}
+  if(el.dataset.berth){S.berth[el.dataset.berth]=el.value;render(false);$(`#b-${el.dataset.berth}`).focus();return}
+  if(el.id==='tkB'){S.tkBackup=el.checked;S.tkMax=null;tatkalDrawer();$('#tkB').focus();return}
+  if(el.id==='tkMax'){S.tkMax=+el.value;return}
+  if(el.id==='sort'){S.sort=el.value;render(false);$('#sort').focus();return}
+  if(el.id==='date'){S.date=+el.value;return}
+  if(el.id==='from'||el.id==='to'){const v=el.value.trim();const c=ALIAS[v.toLowerCase()]||(CITY[v]?v:null);if(c)S[el.id]=c;return}
+});
+document.addEventListener('submit',e=>{
+  e.preventDefault();const f=e.target;
+  if(f.id==='searchForm'){if(!(S.from==='Bengaluru'&&S.to==='Patna')){toast('Sample data covers Bengaluru → Patna');S.from='Bengaluru';S.to='Patna'}S.rtab='all';go('results')}
+  if(f.id==='addPax'){const n=$('#apName').value.trim(),a=+$('#apAge').value;if(!n||!a){toast('Add a name and age');return}const id='p'+Date.now();PEOPLE.push({id,name:n,rel:$('#apRel').value,age:a,g:$('#apG').value});if(S.view==='travellers')S.pax.push(id);closeLayer();render(false);toast(`${n} saved`)}
+  if(f.id==='vform'){const v=$('#vtext').value.trim();if(v){$('#vsaid').textContent=v;handleSpeech(v)}}
+  if(f.id==='pnrForm'){$('#pnrOut').innerHTML=`<div class="infoline" role="status">${I.info}<span><b>Telangana Express · 12724</b><br>Waitlist 5 · 82% chance to confirm · Sun, 8 Nov</span></div>`}
+  if(f.id==='liveSearch'){toast('Showing 12724 · sample data')}
+});
+function tour(k){
+  closeLayer();S.stack=[];
+  const reset=()=>{S.from='Bengaluru';S.to='Patna';S.rtab='all';S.sort='best';S.quota='GN';S.date=1;S.pax=['me'];S.berth={}};
+  if(k==='welcome'){S.auth=false;S.tk=null;reset();go('home');toast('You’re browsing as a guest. Find trains, then Book to see sign-in.');return}
+  S.auth=true;
+  if(k==='connecting'){reset();S.rtab='conn';S.stack=['home'];S.view='results';render(true);return}
+  if(k==='waitlist'){reset();S.stack=['home','results'];S.sel='san';S.selCls='3A';S.view='detail';render(true);return}
+  if(k==='senior'){reset();S.quota='SS';S.pax=['mom','dad'];S.stack=['home'];S.view='results';render(true);return}
+  if(k==='tatkal'){reset();S.quota='TQ';S.date=TK.idx;S.pax=['me','dad'];S.stack=['home','results'];S.sel='san';S.selCls='3A';S.view='detail';render(true);S.tkBackup=true;S.tkMax=null;setTimeout(tatkalDrawer,120);return}
+  if(k==='live'){go('live');return}
+  if(k==='voice'){go('home');setTimeout(openVoice,100);return}
+  if(k==='a11y'){go('profile');return}
+}
+$('#fab .m').innerHTML=I.wave;
+applyA();render(false);
+</script>
+</body>
+</html>
